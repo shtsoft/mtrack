@@ -5,9 +5,8 @@ pub mod utils;
 use app::server;
 use app::AppState;
 
-use utils::{serve,load_certs, load_key, sigint_abort};
+use utils::{load_certs, load_key, serve, sigint_abort};
 
-use std::env::Args;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV6};
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -22,15 +21,15 @@ use tracing::{Instrument, Level};
 
 const NAME: &str = "mtrack";
 
-const LEVEL: Level = Level::INFO;
-
-const IP: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
-const PORT: u16 = 10443;
-
-const CERTFILE: &str = "example.pem";
-const KEYFILE: &str = "example.key";
-
 const KEY: &str = "1234";
+
+pub struct Args {
+    pub verbose: bool,
+    pub ip: Ipv4Addr,
+    pub port: u16,
+    pub cert: String,
+    pub key: String,
+}
 
 pub struct Config {
     level: Level,
@@ -39,14 +38,23 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(mut _args: Args) -> Result<Self, Box<dyn std::error::Error>> {
-        let level = LEVEL;
+    pub fn new(args: Args) -> Result<Self, Box<dyn std::error::Error>> {
+        let level = if args.verbose {
+            Level::TRACE
+        } else {
+            Level::INFO
+        };
 
-        let addr = SocketAddr::V6(SocketAddrV6::new(Ipv4Addr::to_ipv6_mapped(&IP), PORT, 0, 0));
+        let addr = SocketAddr::V6(SocketAddrV6::new(
+            Ipv4Addr::to_ipv6_mapped(&args.ip),
+            args.port,
+            0,
+            0,
+        ));
 
         let server_config = ServerConfig::builder()
             .with_no_client_auth()
-            .with_single_cert(load_certs(CERTFILE)?, load_key(KEYFILE)?)?;
+            .with_single_cert(load_certs(&args.cert)?, load_key(&args.key)?)?;
 
         Ok(Self {
             level,

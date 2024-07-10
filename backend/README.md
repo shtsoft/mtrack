@@ -26,10 +26,10 @@ Then copy the resulting binary `target/release/mtrack` to the appropriate locati
 
 ### Usage
 
-To get a usage description just run the app without arguments:
+To get a usage description just run the app with the 'help'-argument:
 
 ```console
-user@host:~$ mtrack
+user@host:~$ mtrack --help
 ```
 
 ## Contributing
