@@ -78,7 +78,7 @@ where
                 continue;
             }
         };
-        tracing::info!("Add TLS for connection from {}", addr);
+        tracing::info!("Added TLS for connection from {}", addr);
 
         let span = tracing::error_span!("service", "connection-id" = id, "client-address" = %addr);
         span.follows_from(Span::current());
