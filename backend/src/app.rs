@@ -3,7 +3,7 @@ use std::sync::RwLock;
 
 use axum::extract::{Path, Request, State};
 use axum::http::StatusCode;
-use axum::routing::post;
+use axum::routing::{get, post};
 use axum::Router;
 
 use hyper::body::Incoming;
@@ -33,12 +33,17 @@ async fn handler_post(
     }
 }
 
+async fn handler_health_check() -> StatusCode {
+    StatusCode::OK
+}
+
 pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState>>) {
     tracing::debug!("TcpStream from proxy to downstream: {:?}", tls_socket);
 
     tracing::info!("Start serving connection");
 
     let app = Router::new()
+        .route("/health_check", get(handler_health_check))
         .route("/:key", post(handler_post))
         .with_state(state);
 
