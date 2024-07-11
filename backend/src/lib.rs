@@ -7,6 +7,7 @@ use app::AppState;
 
 use utils::{load_certs, load_key, serve, sigint_abort};
 
+use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV6};
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -75,6 +76,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
 
     let state = Arc::new(RwLock::new(AppState {
         key: KEY.to_string(),
+        positions: HashMap::new()
     }));
 
     let handle = task::spawn(
