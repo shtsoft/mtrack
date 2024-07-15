@@ -4,10 +4,12 @@ pub mod utils;
 
 use app::server;
 use app::AppState;
+use app::UserEntry;
 
 use utils::{load_certs, load_key, serve, sigint_abort};
 
 use std::collections::HashMap;
+use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV6};
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -22,20 +24,20 @@ use tracing::{Instrument, Level};
 
 const NAME: &str = "mtrack";
 
-const KEY: &str = "1234";
-
 pub struct Args {
     pub verbose: bool,
     pub ip: Ipv4Addr,
     pub port: u16,
     pub cert: String,
     pub key: String,
+    pub upload_users: String,
 }
 
 pub struct Config {
     level: Level,
     addr: SocketAddr,
     server_config: ServerConfig,
+    upload_users: Vec<UserEntry>,
 }
 
 impl Config {
@@ -57,10 +59,14 @@ impl Config {
             .with_no_client_auth()
             .with_single_cert(load_certs(&args.cert)?, load_key(&args.key)?)?;
 
+        let upload_users: Vec<UserEntry> =
+            serde_json::from_str(&fs::read_to_string(args.upload_users)?)?;
+
         Ok(Self {
             level,
             addr,
             server_config,
+            upload_users,
         })
     }
 }
@@ -75,8 +81,8 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
     let _ = subscriber::set_global_default(subscriber);
 
     let state = Arc::new(RwLock::new(AppState {
-        key: KEY.to_string(),
-        positions: HashMap::new()
+        upload_users: config.upload_users,
+        positions: HashMap::new(),
     }));
 
     let handle = task::spawn(

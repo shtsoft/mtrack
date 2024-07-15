@@ -24,6 +24,9 @@ pub struct Args {
     /// Path to TLS key the server uses
     #[arg(short, long)]
     key: String,
+    /// Path to upload users db the server uses
+    #[arg(short, long)]
+    upload_users: String,
 }
 
 fn main() {
@@ -33,7 +36,8 @@ fn main() {
         ip: args.ip,
         port: args.port,
         cert: args.cert,
-        key: args.key
+        key: args.key,
+        upload_users: args.upload_users
     };
 
     let config = Config::new(args).unwrap_or_else(|err| {

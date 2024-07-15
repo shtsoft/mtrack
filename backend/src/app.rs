@@ -13,6 +13,8 @@ use hyper::service;
 
 use hyper_util::rt::TokioIo;
 
+use serde::Deserialize;
+
 use tokio::net::TcpStream;
 
 use tokio_rustls::server::TlsStream;
@@ -21,9 +23,32 @@ use tower::Service;
 
 type Coordinates = usize;
 
+#[derive(Deserialize)]
+pub struct UserEntry {
+    name: String,
+    hash: String,
+}
+
 pub struct AppState {
-    pub key: String,
+    pub upload_users: Vec<UserEntry>,
     pub positions: HashMap<String, VecDeque<Coordinates>>,
+}
+
+fn lookup(password: &str, users: &Vec<UserEntry>) -> Option<String> {
+    for user in users {
+        let verified = match bcrypt::verify(password, &user.hash) {
+            Ok(b) => b,
+            Err(err) => {
+                tracing::error!("Failed to verify password of user {}: {:?}", user.name, err);
+                continue;
+            }
+        };
+        if verified {
+            return Some(user.name.clone());
+        }
+    }
+
+    None
 }
 
 async fn handler_post_position(
@@ -31,30 +56,39 @@ async fn handler_post_position(
     State(state): State<Arc<RwLock<AppState>>>,
     body: String,
 ) -> (StatusCode, String) {
-    if key == state.read().expect("Poisoned lock.").key {
+    // The following indirection is here to prevent a deadlock arising from the lifetime of the
+    // guard.
+    let lookup = lookup(&key, &state.read().expect("Poisoned lock.").upload_users);
+    if let Some(name) = lookup {
         let coordinates = match body.parse::<Coordinates>() {
             Ok(coordinates) => coordinates,
             Err(err) => {
                 tracing::warn!("Client posting invalid coordinates: {:?}", err);
-                return (StatusCode::BAD_REQUEST, "Coordinates must be numbers.".to_string());
+                return (
+                    StatusCode::BAD_REQUEST,
+                    "Coordinates must be numbers.".to_string(),
+                );
             }
         };
 
         let positions = &mut state.write().expect("Poisoned lock.").positions;
 
         if !positions.contains_key(&key) {
-            tracing::info!("Create position queue for user KEY");
+            tracing::info!("Create position queue for user {}", name);
             positions.insert(key.clone(), VecDeque::with_capacity(500));
         }
-        
+
         if let Some(deque) = positions.get_mut(&key) {
             deque.push_back(coordinates);
         }
-        
+
         (StatusCode::OK, String::new())
     } else {
         tracing::warn!("Client trying to post coordinates with invalid key");
-        (StatusCode::BAD_REQUEST, "You must have valid key to post coordinates.".to_string())
+        (
+            StatusCode::BAD_REQUEST,
+            "You must have valid key to post coordinates.".to_string(),
+        )
     }
 }
 
