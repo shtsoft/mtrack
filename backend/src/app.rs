@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
 
@@ -31,7 +31,7 @@ pub struct UserEntry {
 
 pub struct AppState {
     pub upload_users: Vec<UserEntry>,
-    pub positions: HashMap<String, VecDeque<Coordinates>>,
+    pub positions: HashMap<String, Coordinates>,
 }
 
 fn lookup(password: &str, users: &Vec<UserEntry>) -> Option<String> {
@@ -73,14 +73,9 @@ async fn handler_post_position(
 
         let positions = &mut state.write().expect("Poisoned lock.").positions;
 
-        if !positions.contains_key(&key) {
-            tracing::info!("Create position queue for user {}", name);
-            positions.insert(key.clone(), VecDeque::with_capacity(500));
-        }
-
-        if let Some(deque) = positions.get_mut(&key) {
-            deque.push_back(coordinates);
-        }
+        if positions.insert(name.clone(), coordinates).is_none() {
+            tracing::info!("Start tracking position of user {}", name);
+        };
 
         (StatusCode::OK, String::new())
     } else {
