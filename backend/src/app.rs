@@ -34,6 +34,14 @@ pub struct AppState {
     pub positions: HashMap<String, Coordinates>,
 }
 
+async fn handler_get_position(State(state): State<Arc<RwLock<AppState>>>) -> (StatusCode, String) {
+    let positions = &state.read().expect("Poisoned lock.").positions;
+    (
+        StatusCode::OK,
+        serde_json::to_string(positions).expect("Impossible serialization error."),
+    )
+}
+
 fn lookup(password: &str, users: &Vec<UserEntry>) -> Option<String> {
     for user in users {
         let verified = match bcrypt::verify(password, &user.hash) {
@@ -99,6 +107,7 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
     let app = Router::new()
         .route("/health_check", get(handler_health_check))
         .route("/position/:key", post(handler_post_position))
+        .route("/position", get(handler_get_position))
         .with_state(state);
 
     if let Err(err) = http1::Builder::new()
