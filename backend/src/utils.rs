@@ -22,6 +22,7 @@ use tokio_rustls::server::TlsStream;
 use tokio_rustls::TlsAcceptor;
 
 use tracing::{Instrument, Span};
+
 pub fn load_certs(filename: &str) -> std::io::Result<Vec<CertificateDer<'static>>> {
     let mut reader = BufReader::new(File::open(filename)?);
     rustls_pemfile::certs(&mut reader).collect()
