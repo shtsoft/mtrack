@@ -399,8 +399,8 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
 
     let app = Router::new()
         .route("/health_check", get(handler_health_check))
-        .route("/position/:key", post(handler_post_position))
-        .route("/position", get(handler_get_positions))
+        .route("/positions/:key", post(handler_post_position))
+        .route("/positions", get(handler_get_positions))
         .route("/login", post(handler_login))
         .route("/logout", post(handler_logout))
         .with_state(state);
