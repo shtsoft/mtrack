@@ -155,6 +155,7 @@ async fn handler_logout(
     }
 }
 
+#[allow(clippy::single_match)]
 async fn handler_login(
     Query(query): Query<HashMap<String, String>>,
     headers: HeaderMap,
