@@ -267,7 +267,7 @@ async fn handler_get_positions(
                                 .body(Body::from(positions))
                                 .expect("Impossible error when building response")
                         } else {
-                            tracing::warn!("Client trying to get positions with bein logged");
+                            tracing::warn!("Client trying to get positions with being logged in");
                             Response::builder()
                                 .status(StatusCode::BAD_REQUEST)
                                 .body(Body::from("You have to be logged in to get positions."))
