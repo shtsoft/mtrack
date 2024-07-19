@@ -31,6 +31,7 @@ pub struct Args {
     pub cert: String,
     pub key: String,
     pub upload_users: String,
+    pub download_users: String,
 }
 
 pub struct Config {
@@ -38,6 +39,7 @@ pub struct Config {
     addr: SocketAddr,
     server_config: ServerConfig,
     upload_users: Vec<UserEntry>,
+    download_users: Vec<UserEntry>,
 }
 
 impl Config {
@@ -62,11 +64,15 @@ impl Config {
         let upload_users: Vec<UserEntry> =
             serde_json::from_str(&fs::read_to_string(args.upload_users)?)?;
 
+        let download_users: Vec<UserEntry> =
+            serde_json::from_str(&fs::read_to_string(args.download_users)?)?;
+
         Ok(Self {
             level,
             addr,
             server_config,
             upload_users,
+            download_users,
         })
     }
 }
@@ -81,6 +87,8 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
     let _ = subscriber::set_global_default(subscriber);
 
     let state = Arc::new(RwLock::new(AppState {
+        sessions: HashMap::new(),
+        download_users: config.download_users,
         upload_users: config.upload_users,
         positions: HashMap::new(),
     }));

@@ -27,6 +27,9 @@ pub struct Args {
     /// Path to upload users db the server uses
     #[arg(short, long)]
     upload_users: String,
+    /// Path to download users db the server uses
+    #[arg(short, long)]
+    download_users: String,
 }
 
 fn main() {
@@ -37,7 +40,8 @@ fn main() {
         port: args.port,
         cert: args.cert,
         key: args.key,
-        upload_users: args.upload_users
+        upload_users: args.upload_users,
+        download_users: args.download_users,
     };
 
     let config = Config::new(args).unwrap_or_else(|err| {
