@@ -79,7 +79,6 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     Ok(jar)
 }
 
-//TODO make body smaller
 async fn handler_logout(
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
@@ -250,12 +249,66 @@ async fn handler_login(
     }
 }
 
-async fn handler_get_position(State(state): State<Arc<RwLock<AppState>>>) -> (StatusCode, String) {
-    let positions = &state.read().expect("Poisoned lock.").positions;
-    (
-        StatusCode::OK,
-        serde_json::to_string(positions).expect("Impossible serialization error."),
-    )
+async fn handler_get_position(
+    headers: HeaderMap,
+    State(state): State<Arc<RwLock<AppState>>>,
+) -> Response {
+    match headers.get(header::COOKIE) {
+        Some(cookies_value) => match parse_cookies(cookies_value) {
+            Ok(jar) => match jar.get("sessionID") {
+                Some(cookie) => match cookie.value().parse::<u128>() {
+                    Ok(session_id) => {
+                        let state = &state.read().expect("Poisoned lock.");
+                        if state.sessions.contains_key(&session_id) {
+                            let positions = serde_json::to_string(&state.positions)
+                                .expect("Impossible serialization error.");
+                            Response::builder()
+                                .status(StatusCode::OK)
+                                .body(Body::from(positions))
+                                .expect("Impossible error when building response")
+                        } else {
+                            tracing::warn!("Client trying to get positions with bein logged");
+                            Response::builder()
+                                .status(StatusCode::BAD_REQUEST)
+                                .body(Body::from("You have to be logged in to get positions."))
+                                .expect("Impossible error when building response")
+                        }
+                    }
+                    Err(err) => {
+                        tracing::warn!(
+                            "Client trying to get positions with invalid 'sessionID': {:?}",
+                            err
+                        );
+                        Response::builder()
+                            .status(StatusCode::BAD_REQUEST)
+                            .body(Body::from("The 'sessionID' has to be a 128-bit integer."))
+                            .expect("Impossible error when building response")
+                    }
+                },
+                None => {
+                    tracing::warn!(
+                        "Client trying to get positions without showing a 'sessionID'-cookie"
+                    );
+                    Response::builder()
+                        .status(StatusCode::BAD_REQUEST)
+                        .body(Body::from(
+                            "You can only get positions by showing a valid 'sessionID'-cookie",
+                        ))
+                        .expect("Impossible error when building response")
+                }
+            },
+            Err(response) => response,
+        },
+        None => {
+            tracing::warn!("Client trying to get positions without showing cookies");
+            Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .body(Body::from(
+                    "You can only get positions by showing a valid 'sessionID'-cookie",
+                ))
+                .expect("Impossible error when building response")
+        }
+    }
 }
 
 async fn handler_post_position(
