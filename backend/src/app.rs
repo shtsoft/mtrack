@@ -79,6 +79,34 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     Ok(jar)
 }
 
+fn extract_session_id(headers: HeaderMap) -> Result<u128, Response> {
+    match headers.get(header::COOKIE) {
+        Some(cookies_value) => match parse_cookies(cookies_value) {
+            Ok(jar) => match jar.get("sessionID") {
+                Some(cookie) => match cookie.value().parse::<u128>() {
+                    Ok(session_id) => Ok(session_id),
+                    Err(err) => {
+                        tracing::warn!("Client showing invalid 'sessionID': {:?}", err);
+                        Err(Response::builder()
+                            .status(StatusCode::BAD_REQUEST)
+                            .body(Body::from("The 'sessionID' has to be an integer."))
+                            .expect("Impossible error when building response"))
+                    }
+                },
+                None => Err(Response::builder()
+                    .status(StatusCode::BAD_REQUEST)
+                    .body(Body::from("There is no 'sessionID'-cookie."))
+                    .expect("Impossible error when building response")),
+            },
+            Err(response) => Err(response),
+        },
+        None => Err(Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from("The are no cookies."))
+            .expect("Impossible error when building response")),
+    }
+}
+
 async fn handler_logout(
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
@@ -105,57 +133,22 @@ async fn handler_logout(
             .to_string())
     }
 
-    match headers.get(header::COOKIE) {
-        Some(cookies_value) => match parse_cookies(cookies_value) {
-            Ok(jar) => match jar.get("sessionID") {
-                Some(cookie) => match cookie.value().parse::<u128>() {
-                    Ok(session_id) => match delete_session_cookie(session_id, &state) {
-                        Ok(delete_session_cookie) => {
-                            tracing::info!("A user has logged out successfully");
-                            Response::builder()
-                                .status(StatusCode::OK)
-                                .header(header::SET_COOKIE, delete_session_cookie)
-                                .body(Body::from("Log out succeeded."))
-                                .expect("Impossible error when building response")
-                        }
-                        Err(response) => response,
-                    },
-                    Err(err) => {
-                        tracing::warn!(
-                            "Client trying to log out with invalid 'sessionID': {:?}",
-                            err
-                        );
-                        Response::builder()
-                            .status(StatusCode::BAD_REQUEST)
-                            .body(Body::from("The 'sessionID' has to be a 128-bit integer."))
-                            .expect("Impossible error when building response")
-                    }
-                },
-                None => {
-                    tracing::warn!("Client trying to log out without showing a 'sessionID'-cookie");
-                    Response::builder()
-                        .status(StatusCode::BAD_REQUEST)
-                        .body(Body::from(
-                            "You can only log out by showing a valid 'sessionID'-cookie",
-                        ))
-                        .expect("Impossible error when building response")
-                }
-            },
+    match extract_session_id(headers) {
+        Ok(session_id) => match delete_session_cookie(session_id, &state) {
+            Ok(delete_session_cookie) => {
+                tracing::info!("A user has logged out successfully");
+                Response::builder()
+                    .status(StatusCode::OK)
+                    .header(header::SET_COOKIE, delete_session_cookie)
+                    .body(Body::from("Log out succeeded."))
+                    .expect("Impossible error when building response")
+            }
             Err(response) => response,
         },
-        None => {
-            tracing::warn!("Client trying to log out without showing cookies");
-            Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .body(Body::from(
-                    "You can only log out by showing a valid 'sessionID'-cookie",
-                ))
-                .expect("Impossible error when building response")
-        }
+        Err(response) => response,
     }
 }
 
-#[allow(clippy::single_match)]
 async fn handler_login(
     Query(query): Query<HashMap<String, String>>,
     headers: HeaderMap,
@@ -185,28 +178,16 @@ async fn handler_login(
             .to_string()
     }
 
-    match headers.get(header::COOKIE) {
-        Some(cookies_value) => match parse_cookies(cookies_value) {
-            Ok(jar) => match jar.get("sessionID") {
-                Some(cookie) => match cookie.value().parse::<u128>() {
-                    Ok(session_id) => {
-                        let sessions = &state.read().expect("Poisoned lock.").sessions;
-                        if sessions.contains_key(&session_id) {
-                            tracing::info!("Client trying to log in while logged in");
-                            return Response::builder()
-                                .status(StatusCode::SEE_OTHER)
-                                .header(header::LOCATION, "/map")
-                                .body(Body::from("You are already logged in."))
-                                .expect("Impossible error when building response");
-                        }
-                    }
-                    Err(_) => {}
-                },
-                None => {}
-            },
-            Err(response) => return response,
-        },
-        None => {}
+    if let Ok(session_id) = extract_session_id(headers) {
+        let sessions = &state.read().expect("Poisoned lock.").sessions;
+        if sessions.contains_key(&session_id) {
+            tracing::info!("Client trying to log in while logged in");
+            return Response::builder()
+                .status(StatusCode::SEE_OTHER)
+                .header(header::LOCATION, "/map")
+                .body(Body::from("You are already logged in."))
+                .expect("Impossible error when building response");
+        }
     }
 
     let name = &query["name"];
@@ -254,61 +235,25 @@ async fn handler_get_positions(
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
 ) -> Response {
-    match headers.get(header::COOKIE) {
-        Some(cookies_value) => match parse_cookies(cookies_value) {
-            Ok(jar) => match jar.get("sessionID") {
-                Some(cookie) => match cookie.value().parse::<u128>() {
-                    Ok(session_id) => {
-                        let state = &state.read().expect("Poisoned lock.");
-                        if state.sessions.contains_key(&session_id) {
-                            let positions = serde_json::to_string(&state.positions)
-                                .expect("Impossible serialization error.");
-                            Response::builder()
-                                .status(StatusCode::OK)
-                                .body(Body::from(positions))
-                                .expect("Impossible error when building response")
-                        } else {
-                            tracing::warn!("Client trying to get positions with being logged in");
-                            Response::builder()
-                                .status(StatusCode::BAD_REQUEST)
-                                .body(Body::from("You have to be logged in to get positions."))
-                                .expect("Impossible error when building response")
-                        }
-                    }
-                    Err(err) => {
-                        tracing::warn!(
-                            "Client trying to get positions with invalid 'sessionID': {:?}",
-                            err
-                        );
-                        Response::builder()
-                            .status(StatusCode::BAD_REQUEST)
-                            .body(Body::from("The 'sessionID' has to be a 128-bit integer."))
-                            .expect("Impossible error when building response")
-                    }
-                },
-                None => {
-                    tracing::warn!(
-                        "Client trying to get positions without showing a 'sessionID'-cookie"
-                    );
-                    Response::builder()
-                        .status(StatusCode::BAD_REQUEST)
-                        .body(Body::from(
-                            "You can only get positions by showing a valid 'sessionID'-cookie",
-                        ))
-                        .expect("Impossible error when building response")
-                }
-            },
-            Err(response) => response,
-        },
-        None => {
-            tracing::warn!("Client trying to get positions without showing cookies");
-            Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .body(Body::from(
-                    "You can only get positions by showing a valid 'sessionID'-cookie",
-                ))
-                .expect("Impossible error when building response")
+    match extract_session_id(headers) {
+        Ok(session_id) => {
+            let state = &state.read().expect("Poisoned lock.");
+            if state.sessions.contains_key(&session_id) {
+                let positions = serde_json::to_string(&state.positions)
+                    .expect("Impossible serialization error.");
+                Response::builder()
+                    .status(StatusCode::OK)
+                    .body(Body::from(positions))
+                    .expect("Impossible error when building response")
+            } else {
+                tracing::warn!("Client trying to get positions with being logged in");
+                Response::builder()
+                    .status(StatusCode::BAD_REQUEST)
+                    .body(Body::from("You have to be logged in to get positions."))
+                    .expect("Impossible error when building response")
+            }
         }
+        Err(response) => response,
     }
 }
 
@@ -350,7 +295,6 @@ async fn handler_post_position(
         };
 
         let positions = &mut state.write().expect("Poisoned lock.").positions;
-
         if positions.insert(name.clone(), coordinates).is_none() {
             tracing::info!("Start tracking position of user {}", name);
         };
