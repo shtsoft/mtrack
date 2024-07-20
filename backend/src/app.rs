@@ -64,7 +64,7 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
                 .body(Body::from(
                     "Cookies have to be made up by visible ASCII chars only.",
                 ))
-                .expect("Impossible error when building response"));
+                .expect("Impossible error when building response."));
         }
     };
 
@@ -90,20 +90,20 @@ fn extract_session_id(headers: HeaderMap) -> Result<u128, Response> {
                         Err(Response::builder()
                             .status(StatusCode::BAD_REQUEST)
                             .body(Body::from("The 'sessionID' has to be an integer."))
-                            .expect("Impossible error when building response"))
+                            .expect("Impossible error when building response."))
                     }
                 },
                 None => Err(Response::builder()
                     .status(StatusCode::BAD_REQUEST)
                     .body(Body::from("There is no 'sessionID'-cookie."))
-                    .expect("Impossible error when building response")),
+                    .expect("Impossible error when building response.")),
             },
             Err(response) => Err(response),
         },
         None => Err(Response::builder()
             .status(StatusCode::BAD_REQUEST)
             .body(Body::from("The are no cookies."))
-            .expect("Impossible error when building response")),
+            .expect("Impossible error when building response.")),
     }
 }
 
@@ -121,7 +121,7 @@ async fn handler_logout(
             return Err(Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("Your session does not exist."))
-                .expect("Impossible error when building response"));
+                .expect("Impossible error when building response."));
         }
 
         Ok(Cookie::build(("sessionID", "deleted"))
@@ -141,7 +141,7 @@ async fn handler_logout(
                     .status(StatusCode::OK)
                     .header(header::SET_COOKIE, delete_session_cookie)
                     .body(Body::from("Log out succeeded."))
-                    .expect("Impossible error when building response")
+                    .expect("Impossible error when building response.")
             }
             Err(response) => response,
         },
@@ -186,7 +186,7 @@ async fn handler_login(
                 .status(StatusCode::SEE_OTHER)
                 .header(header::LOCATION, "/map")
                 .body(Body::from("You are already logged in."))
-                .expect("Impossible error when building response");
+                .expect("Impossible error when building response.");
         }
     }
 
@@ -204,7 +204,7 @@ async fn handler_login(
                 return Response::builder()
                     .status(StatusCode::INTERNAL_SERVER_ERROR)
                     .body(Body::from("Failed to validate login data."))
-                    .expect("Impossible error when building response");
+                    .expect("Impossible error when building response.");
             }
         };
         if verified {
@@ -214,20 +214,20 @@ async fn handler_login(
                 .status(StatusCode::OK)
                 .header(header::SET_COOKIE, session_cookie)
                 .body(Body::from("Log in succeeded."))
-                .expect("Impossible error when building response")
+                .expect("Impossible error when building response.")
         } else {
             tracing::warn!("User {} trying to login with invalid password", name);
             Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("You must have valid login data."))
-                .expect("Impossible error when building response")
+                .expect("Impossible error when building response.")
         }
     } else {
         tracing::warn!("Client trying to login with invalid user name");
         Response::builder()
             .status(StatusCode::BAD_REQUEST)
             .body(Body::from("You must have valid login data."))
-            .expect("Impossible error when building response")
+            .expect("Impossible error when building response.")
     }
 }
 
@@ -244,13 +244,13 @@ async fn handler_get_positions(
                 Response::builder()
                     .status(StatusCode::OK)
                     .body(Body::from(positions))
-                    .expect("Impossible error when building response")
+                    .expect("Impossible error when building response.")
             } else {
-                tracing::warn!("Client trying to get positions with being logged in");
+                tracing::warn!("Client trying to get positions without being logged in");
                 Response::builder()
                     .status(StatusCode::BAD_REQUEST)
                     .body(Body::from("You have to be logged in to get positions."))
-                    .expect("Impossible error when building response")
+                    .expect("Impossible error when building response.")
             }
         }
         Err(response) => response,
