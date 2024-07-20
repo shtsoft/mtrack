@@ -50,6 +50,32 @@ pub struct AppState {
     pub positions: HashMap<String, Coordinates>,
 }
 
+fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<String> {
+    for user in users {
+        let verified = match bcrypt::verify(password, &user.hash) {
+            Ok(b) => b,
+            Err(err) => {
+                tracing::error!("Failed to verify password of user {}: {:?}", user.name, err);
+                continue;
+            }
+        };
+        if verified {
+            return Some(user.name.clone());
+        }
+    }
+
+    None
+}
+
+fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
+    for user in users {
+        if user.name == name {
+            return Some(user.hash.clone());
+        }
+    }
+    None
+}
+
 fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     let cookies_str = match cookies_value.to_str() {
         Ok(c) => c,
@@ -153,15 +179,6 @@ async fn handler_login(
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
 ) -> Response {
-    fn lookup(name: &str, users: &Vec<UserEntry>) -> Option<String> {
-        for user in users {
-            if user.name == name {
-                return Some(user.hash.clone());
-            }
-        }
-        None
-    }
-
     fn make_session_cookie(state: &Arc<RwLock<AppState>>) -> String {
         let mut rng = rand::thread_rng();
         let session_id: u128 = rng.gen();
@@ -194,7 +211,7 @@ async fn handler_login(
 
     // The following indirection is here to prevent a deadlock arising from the lifetime of the
     // guard.
-    let lookup = lookup(name, &state.read().expect("Poisoned lock.").download_users);
+    let lookup = lookup_hash(name, &state.read().expect("Poisoned lock.").download_users);
     if let Some(hash) = lookup {
         let verified = match bcrypt::verify(password, &hash) {
             Ok(b) => b,
@@ -261,26 +278,9 @@ async fn handler_post_position(
     State(state): State<Arc<RwLock<AppState>>>,
     body: String,
 ) -> (StatusCode, String) {
-    fn lookup(password: &str, users: &Vec<UserEntry>) -> Option<String> {
-        for user in users {
-            let verified = match bcrypt::verify(password, &user.hash) {
-                Ok(b) => b,
-                Err(err) => {
-                    tracing::error!("Failed to verify password of user {}: {:?}", user.name, err);
-                    continue;
-                }
-            };
-            if verified {
-                return Some(user.name.clone());
-            }
-        }
-
-        None
-    }
-
     // The following indirection is here to prevent a deadlock arising from the lifetime of the
     // guard.
-    let lookup = lookup(&key, &state.read().expect("Poisoned lock.").upload_users);
+    let lookup = lookup_name(&key, &state.read().expect("Poisoned lock.").upload_users);
     if let Some(name) = lookup {
         let coordinates = match body.parse::<Coordinates>() {
             Ok(coordinates) => coordinates,
