@@ -37,6 +37,11 @@ const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 
 type Coordinates = usize;
 
+pub struct SessionState {
+    name: String,
+    ttl: u8,
+}
+
 #[derive(Deserialize)]
 pub struct UserEntry {
     name: String,
@@ -44,7 +49,7 @@ pub struct UserEntry {
 }
 
 pub struct AppState {
-    pub sessions: HashMap<u128, u8>,
+    pub sessions: HashMap<u128, SessionState>,
     pub download_users: Vec<UserEntry>,
     pub upload_users: Vec<UserEntry>,
     pub positions: HashMap<String, Coordinates>,
@@ -139,29 +144,33 @@ async fn handler_logout(
     fn delete_session_cookie(
         session_id: u128,
         state: &Arc<RwLock<AppState>>,
-    ) -> Result<String, Response> {
+    ) -> Result<(String, String), Response> {
         let sessions = &mut state.write().expect("Poisoned lock.").sessions;
-        if sessions.remove(&session_id).is_none() {
-            tracing::warn!("Client trying to log out from non-existing session");
-            return Err(Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .body(Body::from("Your session does not exist."))
-                .expect("Impossible error when building response."));
+        match sessions.remove(&session_id) {
+            Some(session_state) => Ok((
+                Cookie::build(("sessionID", "deleted"))
+                    .expires(Expiration::DateTime(OffsetDateTime::UNIX_EPOCH))
+                    .path("/")
+                    .secure(true)
+                    .http_only(true)
+                    .same_site(SameSite::Strict)
+                    .to_string(),
+                session_state.name,
+            )),
+            None => {
+                tracing::warn!("Client trying to log out from non-existing session");
+                Err(Response::builder()
+                    .status(StatusCode::BAD_REQUEST)
+                    .body(Body::from("Your session does not exist."))
+                    .expect("Impossible error when building response."))
+            }
         }
-
-        Ok(Cookie::build(("sessionID", "deleted"))
-            .expires(Expiration::DateTime(OffsetDateTime::UNIX_EPOCH))
-            .path("/")
-            .secure(true)
-            .http_only(true)
-            .same_site(SameSite::Strict)
-            .to_string())
     }
 
     match extract_session_id(headers) {
         Ok(session_id) => match delete_session_cookie(session_id, &state) {
-            Ok(delete_session_cookie) => {
-                tracing::info!("A user has logged out successfully");
+            Ok((delete_session_cookie, name)) => {
+                tracing::info!("User {} has logged out successfully", name);
                 Response::builder()
                     .status(StatusCode::OK)
                     .header(header::SET_COOKIE, delete_session_cookie)
@@ -179,12 +188,18 @@ async fn handler_login(
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
 ) -> Response {
-    fn make_session_cookie(state: &Arc<RwLock<AppState>>) -> String {
+    fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
         let mut rng = rand::thread_rng();
         let session_id: u128 = rng.gen();
 
         let sessions = &mut state.write().expect("Poisoned lock.").sessions;
-        let _ = sessions.insert(session_id, SESSION_TTL);
+        let _ = sessions.insert(
+            session_id,
+            SessionState {
+                name: name.to_string(),
+                ttl: SESSION_TTL,
+            },
+        );
 
         Cookie::build(("sessionID", session_id.to_string()))
             .path("/")
@@ -224,7 +239,7 @@ async fn handler_login(
             }
         };
         if verified {
-            let session_cookie = make_session_cookie(&state);
+            let session_cookie = make_session_cookie(name, &state);
             tracing::info!("User {} has logged in successfully", name);
             Response::builder()
                 .status(StatusCode::OK)
@@ -317,9 +332,9 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
         let mut dead_sessions = Vec::new();
 
         let sessions = &mut state.write().expect("Poisoned lock.").sessions;
-        for (session, ttl) in sessions {
-            if *ttl > 0 {
-                *ttl -= 1;
+        for (session, state) in sessions {
+            if state.ttl > 0 {
+                state.ttl -= 1;
             } else {
                 dead_sessions.push(session);
             }
