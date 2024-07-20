@@ -247,14 +247,14 @@ async fn handler_login(
                 .body(Body::from("Log in succeeded."))
                 .expect("Impossible error when building response.")
         } else {
-            tracing::warn!("User {} trying to login with invalid password", name);
+            tracing::warn!("User {} trying to log in with invalid password", name);
             Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("You must have valid login data."))
                 .expect("Impossible error when building response.")
         }
     } else {
-        tracing::warn!("Client trying to login with invalid user name");
+        tracing::warn!("Client trying to log in with invalid user name");
         Response::builder()
             .status(StatusCode::BAD_REQUEST)
             .body(Body::from("You must have valid login data."))
