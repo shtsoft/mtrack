@@ -57,16 +57,17 @@ pub struct AppState {
 
 fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<String> {
     for user in users {
-        let verified = match bcrypt::verify(password, &user.hash) {
-            Ok(b) => b,
+        match bcrypt::verify(password, &user.hash) {
+            Ok(verified) => {
+                if verified {
+                    return Some(user.name.clone());
+                }
+            }
             Err(err) => {
                 tracing::error!("Failed to verify password of user {}: {:?}", user.name, err);
                 continue;
             }
         };
-        if verified {
-            return Some(user.name.clone());
-        }
     }
 
     None
@@ -82,31 +83,30 @@ fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
 }
 
 fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
-    let cookies_str = match cookies_value.to_str() {
-        Ok(c) => c,
+    match cookies_value.to_str() {
+        Ok(cookies_str) => {
+            let mut jar = CookieJar::new();
+            for cookie in Cookie::split_parse(cookies_str.to_string()) {
+                match cookie {
+                    Ok(c) => jar.add(c),
+                    Err(_) => continue,
+                };
+            }
+            Ok(jar)
+        }
         Err(err) => {
             tracing::warn!(
                 "Client showing cookies with non-visible ASCII chars: {:?}",
                 err
             );
-            return Err(Response::builder()
+            Err(Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from(
                     "Cookies have to be made up by visible ASCII chars only.",
                 ))
-                .expect("Impossible error when building response."));
+                .expect("Impossible error when building response."))
         }
-    };
-
-    let mut jar = CookieJar::new();
-    for cookie in Cookie::split_parse(cookies_str.to_string()) {
-        match cookie {
-            Ok(c) => jar.add(c),
-            Err(_) => continue,
-        };
     }
-
-    Ok(jar)
 }
 
 fn extract_session_id(headers: HeaderMap) -> Result<u128, Response> {
@@ -228,30 +228,31 @@ async fn handler_login(
     // guard.
     let lookup = lookup_hash(name, &state.read().expect("Poisoned lock.").download_users);
     if let Some(hash) = lookup {
-        let verified = match bcrypt::verify(password, &hash) {
-            Ok(b) => b,
+        match bcrypt::verify(password, &hash) {
+            Ok(verified) => {
+                if verified {
+                    let session_cookie = make_session_cookie(name, &state);
+                    tracing::info!("User {} has logged in successfully", name);
+                    Response::builder()
+                        .status(StatusCode::OK)
+                        .header(header::SET_COOKIE, session_cookie)
+                        .body(Body::from("Log in succeeded."))
+                        .expect("Impossible error when building response.")
+                } else {
+                    tracing::warn!("User {} trying to log in with invalid password", name);
+                    Response::builder()
+                        .status(StatusCode::BAD_REQUEST)
+                        .body(Body::from("You must have valid login data."))
+                        .expect("Impossible error when building response.")
+                }
+            }
             Err(err) => {
                 tracing::error!("Failed to verify password of user {}: {:?}", name, err);
-                return Response::builder()
+                Response::builder()
                     .status(StatusCode::INTERNAL_SERVER_ERROR)
                     .body(Body::from("Failed to validate login data."))
-                    .expect("Impossible error when building response.");
+                    .expect("Impossible error when building response.")
             }
-        };
-        if verified {
-            let session_cookie = make_session_cookie(name, &state);
-            tracing::info!("User {} has logged in successfully", name);
-            Response::builder()
-                .status(StatusCode::OK)
-                .header(header::SET_COOKIE, session_cookie)
-                .body(Body::from("Log in succeeded."))
-                .expect("Impossible error when building response.")
-        } else {
-            tracing::warn!("User {} trying to log in with invalid password", name);
-            Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .body(Body::from("You must have valid login data."))
-                .expect("Impossible error when building response.")
         }
     } else {
         tracing::warn!("Client trying to log in with invalid user name");
@@ -297,23 +298,23 @@ async fn handler_post_position(
     // guard.
     let lookup = lookup_name(&key, &state.read().expect("Poisoned lock.").upload_users);
     if let Some(name) = lookup {
-        let coordinates = match body.parse::<Coordinates>() {
-            Ok(coordinates) => coordinates,
+        match body.parse::<Coordinates>() {
+            Ok(coordinates) => {
+                let positions = &mut state.write().expect("Poisoned lock.").positions;
+                if positions.insert(name.clone(), coordinates).is_none() {
+                    tracing::info!("Start tracking position of user {}", name);
+                };
+
+                (StatusCode::OK, String::new())
+            }
             Err(err) => {
                 tracing::warn!("Client posting invalid coordinates: {:?}", err);
-                return (
+                (
                     StatusCode::BAD_REQUEST,
                     "Coordinates must be numbers.".to_string(),
-                );
+                )
             }
-        };
-
-        let positions = &mut state.write().expect("Poisoned lock.").positions;
-        if positions.insert(name.clone(), coordinates).is_none() {
-            tracing::info!("Start tracking position of user {}", name);
-        };
-
-        (StatusCode::OK, String::new())
+        }
     } else {
         tracing::warn!("Client trying to post coordinates with invalid key");
         (
