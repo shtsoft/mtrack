@@ -36,6 +36,8 @@ use tower::Service;
 const SESSION_TTL: u8 = 24;
 const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 
+const SESSION_ID_COOKIE_NAME: &str = "sessionID";
+
 type Coordinates = usize;
 
 pub struct SessionState {
@@ -113,20 +115,30 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
 fn extract_session_id(headers: HeaderMap) -> Result<u128, Response> {
     match headers.get(header::COOKIE) {
         Some(cookies_value) => match parse_cookies(cookies_value) {
-            Ok(jar) => match jar.get("sessionID") {
+            Ok(jar) => match jar.get(SESSION_ID_COOKIE_NAME) {
                 Some(cookie) => match cookie.value().parse::<u128>() {
                     Ok(session_id) => Ok(session_id),
                     Err(err) => {
-                        tracing::warn!("Client showing invalid 'sessionID': {:?}", err);
+                        tracing::warn!(
+                            "Client showing invalid '{}': {:?}",
+                            SESSION_ID_COOKIE_NAME,
+                            err
+                        );
                         Err(Response::builder()
                             .status(StatusCode::BAD_REQUEST)
-                            .body(Body::from("The 'sessionID' has to be an integer."))
+                            .body(Body::from(format!(
+                                "The '{}' has to be an integer.",
+                                SESSION_ID_COOKIE_NAME
+                            )))
                             .expect("Impossible error when building response."))
                     }
                 },
                 None => Err(Response::builder()
                     .status(StatusCode::BAD_REQUEST)
-                    .body(Body::from("There is no 'sessionID'-cookie."))
+                    .body(Body::from(format!(
+                        "There is no '{}'-cookie.",
+                        SESSION_ID_COOKIE_NAME
+                    )))
                     .expect("Impossible error when building response.")),
             },
             Err(response) => Err(response),
@@ -149,7 +161,7 @@ async fn handler_logout(
         let sessions = &mut state.write().expect("Poisoned lock.").sessions;
         match sessions.remove(&session_id) {
             Some(session_state) => Ok((
-                Cookie::build(("sessionID", "deleted"))
+                Cookie::build((SESSION_ID_COOKIE_NAME, "deleted"))
                     .expires(Expiration::DateTime(OffsetDateTime::UNIX_EPOCH))
                     .path("/")
                     .secure(true)
@@ -202,7 +214,7 @@ async fn handler_login(
             },
         );
 
-        Cookie::build(("sessionID", session_id.to_string()))
+        Cookie::build((SESSION_ID_COOKIE_NAME, session_id.to_string()))
             .path("/")
             .secure(true)
             .http_only(true)
