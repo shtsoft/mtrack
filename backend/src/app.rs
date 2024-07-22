@@ -27,6 +27,7 @@ use serde::Deserialize;
 use time::OffsetDateTime;
 
 use tokio::net::TcpStream;
+use tokio::task;
 
 use tokio_rustls::server::TlsStream;
 
@@ -42,7 +43,7 @@ pub struct SessionState {
     ttl: u8,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct UserEntry {
     name: String,
     hash: String,
@@ -222,13 +223,16 @@ async fn handler_login(
     }
 
     let name = &query["name"];
-    let password = &query["password"];
+    let password = query["password"].clone();
 
     // The following indirection is here to prevent a deadlock arising from the lifetime of the
     // guard.
     let lookup = lookup_hash(name, &state.read().expect("Poisoned lock.").download_users);
     if let Some(hash) = lookup {
-        match bcrypt::verify(password, &hash) {
+        let result = task::spawn_blocking(move || bcrypt::verify(password, &hash))
+            .await
+            .expect("Impossible error when verifying password.");
+        match result {
             Ok(verified) => {
                 if verified {
                     let session_cookie = make_session_cookie(name, &state);
@@ -301,10 +305,16 @@ async fn handler_post_position(
     State(state): State<Arc<RwLock<AppState>>>,
     body: String,
 ) -> (StatusCode, String) {
-    // The following indirection is here to prevent a deadlock arising from the lifetime of the
-    // guard.
-    let lookup = lookup_name(&key, &state.read().expect("Poisoned lock.").upload_users);
-    if let Some(name) = lookup {
+    let state_clone = state.clone();
+    let result = task::spawn_blocking(move || {
+        lookup_name(
+            &key,
+            &state_clone.read().expect("Poisoned lock.").upload_users,
+        )
+    })
+    .await
+    .expect("Impossible error when looking up name.");
+    if let Some(name) = result {
         match body.parse::<Coordinates>() {
             Ok(coordinates) => {
                 let positions = &mut state.write().expect("Poisoned lock.").positions;
