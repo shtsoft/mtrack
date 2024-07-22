@@ -271,12 +271,19 @@ async fn handler_get_positions(
         Ok(session_id) => {
             let state = &state.read().expect("Poisoned lock.");
             if state.sessions.contains_key(&session_id) {
-                let positions = serde_json::to_string(&state.positions)
-                    .expect("Impossible serialization error.");
-                Response::builder()
-                    .status(StatusCode::OK)
-                    .body(Body::from(positions))
-                    .expect("Impossible error when building response.")
+                match serde_json::to_string(&state.positions) {
+                    Ok(positions) => Response::builder()
+                        .status(StatusCode::OK)
+                        .body(Body::from(positions))
+                        .expect("Impossible error when building response."),
+                    Err(err) => {
+                        tracing::error!("Failed to serialize positions: {:?}", err);
+                        Response::builder()
+                            .status(StatusCode::INTERNAL_SERVER_ERROR)
+                            .body(Body::from("Failed to generate position data."))
+                            .expect("Impossible error when building response.")
+                    }
+                }
             } else {
                 tracing::warn!("Client trying to get positions without being logged in");
                 Response::builder()
