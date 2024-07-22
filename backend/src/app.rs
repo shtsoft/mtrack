@@ -96,7 +96,7 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
         }
         Err(err) => {
             tracing::warn!(
-                "Client showing cookies with non-visible ASCII chars: {:?}",
+                "Client showing cookies containing other chars than visible ASCII: {:?}",
                 err
             );
             Err(Response::builder()
