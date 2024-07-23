@@ -87,10 +87,10 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
     let _ = subscriber::set_global_default(subscriber);
 
     let state = Arc::new(RwLock::new(AppState {
-        sessions: HashMap::new(),
+        sessions: HashMap::with_capacity(config.download_users.len()),
+        positions: HashMap::with_capacity(config.upload_users.len()),
         download_users: config.download_users,
         upload_users: config.upload_users,
-        positions: HashMap::new(),
     }));
 
     let handle = task::spawn(

@@ -49,9 +49,9 @@ pub struct UserEntry {
 
 pub struct AppState {
     pub sessions: HashMap<u128, SessionState>,
+    pub positions: HashMap<String, Coordinates>,
     pub download_users: Vec<UserEntry>,
     pub upload_users: Vec<UserEntry>,
-    pub positions: HashMap<String, Coordinates>,
 }
 
 pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState>>) {
