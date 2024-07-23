@@ -21,7 +21,7 @@ use hyper::service;
 
 use hyper_util::rt::TokioIo;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use tokio::net::TcpStream;
 
@@ -34,7 +34,11 @@ const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 
 pub const SESSION_ID_COOKIE_NAME: &str = "sessionID";
 
-type Coordinates = usize;
+#[derive(Deserialize, Serialize)]
+pub struct Coordinates {
+    latitude: f32,
+    longitude: f32
+}
 
 pub struct SessionState {
     name: String,

@@ -26,7 +26,7 @@ pub async fn post_position(
     .await
     .expect("Impossible error when looking up name.");
     if let Some(name) = result {
-        match body.parse::<Coordinates>() {
+        match serde_json::from_str::<Coordinates>(&body) {
             Ok(coordinates) => {
                 let positions = &mut state.write().expect("Poisoned lock.").positions;
                 if positions.insert(name.clone(), coordinates).is_none() {
