@@ -19,6 +19,8 @@ use rand::prelude::*;
 
 use tokio::task;
 
+use tracing::instrument;
+
 fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
     let mut rng = rand::thread_rng();
     let session_id: u128 = rng.gen();
@@ -40,6 +42,7 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
         .to_string()
 }
 
+#[instrument(skip_all)]
 pub async fn login(
     Query(query): Query<HashMap<String, String>>,
     headers: HeaderMap,

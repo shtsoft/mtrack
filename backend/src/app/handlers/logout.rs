@@ -16,6 +16,8 @@ use hyper::header::HeaderMap;
 
 use time::OffsetDateTime;
 
+use tracing::instrument;
+
 fn delete_session_cookie(
     session_id: u128,
     state: &Arc<RwLock<AppState>>,
@@ -42,6 +44,7 @@ fn delete_session_cookie(
     }
 }
 
+#[instrument(skip_all)]
 pub async fn logout(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
     match extract_session_id(headers) {
         Ok(session_id) => match delete_session_cookie(session_id, &state) {

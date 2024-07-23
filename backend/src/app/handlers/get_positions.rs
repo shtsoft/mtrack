@@ -10,6 +10,9 @@ use axum::response::Response;
 
 use hyper::header::HeaderMap;
 
+use tracing::instrument;
+
+#[instrument(skip_all)]
 pub async fn get_positions(
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,

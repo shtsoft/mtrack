@@ -8,6 +8,9 @@ use axum::http::StatusCode;
 
 use tokio::task;
 
+use tracing::instrument;
+
+#[instrument(skip_all)]
 pub async fn post_position(
     Path(key): Path<String>,
     State(state): State<Arc<RwLock<AppState>>>,
