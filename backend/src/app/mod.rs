@@ -58,25 +58,25 @@ pub struct AppState {
     pub upload_users: Vec<UserEntry>,
 }
 
-pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState>>) {
-    fn prune_sessions(state: &Arc<RwLock<AppState>>) {
-        let mut dead_sessions = Vec::new();
+fn prune_sessions(state: &Arc<RwLock<AppState>>) {
+    let mut dead_sessions = Vec::new();
 
-        let sessions = &mut state.write().expect("Poisoned lock.").sessions;
-        for (session, state) in sessions {
-            if state.ttl > 0 {
-                state.ttl -= 1;
-            } else {
-                dead_sessions.push(session);
-            }
-        }
-
-        let sessions = &mut state.write().expect("Poisoned lock.").sessions;
-        for session in dead_sessions {
-            sessions.remove(session);
+    let sessions = &mut state.write().expect("Poisoned lock.").sessions;
+    for (session, state) in sessions {
+        if state.ttl > 0 {
+            state.ttl -= 1;
+        } else {
+            dead_sessions.push(session);
         }
     }
 
+    let sessions = &mut state.write().expect("Poisoned lock.").sessions;
+    for session in dead_sessions {
+        sessions.remove(session);
+    }
+}
+
+pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState>>) {
     tracing::debug!("TcpStream from proxy to downstream: {:?}", tls_socket);
 
     tracing::info!("Start serving connection");
