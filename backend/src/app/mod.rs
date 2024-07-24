@@ -37,7 +37,7 @@ pub const SESSION_ID_COOKIE_NAME: &str = "sessionID";
 #[derive(Deserialize, Serialize)]
 pub struct Coordinates {
     latitude: f32,
-    longitude: f32
+    longitude: f32,
 }
 
 pub struct SessionState {
