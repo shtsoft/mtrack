@@ -1,6 +1,5 @@
 //! This module defines some utility functions to run a server with TLS.
 
-use std::error::Error;
 use std::fmt::Debug;
 use std::fs::File;
 use std::future::Future;
@@ -15,7 +14,6 @@ use thiserror::Error;
 
 use tokio::net::{TcpListener, TcpStream};
 use tokio::signal;
-use tokio::sync::mpsc;
 use tokio::task;
 use tokio::task::JoinHandle;
 
@@ -58,14 +56,6 @@ pub fn load_key(filename: &str) -> std::io::Result<PrivateKeyDer<'static>> {
             _ => {}
         }
     }
-}
-
-#[derive(Debug, Error)]
-pub enum ServeError<E: Error> {
-    #[error("{}", self)]
-    IO(#[from] tokio::io::Error),
-    #[error("{}", self)]
-    Send(#[from] mpsc::error::SendError<JoinHandle<Result<(), E>>>),
 }
 
 /// Runs a server on each TLS connection it establishes.
