@@ -1,3 +1,5 @@
+//! This module defines the handler for posting positions.
+
 use crate::app::handlers::utils::lookup_name;
 use crate::app::{AppState, Coordinates};
 
@@ -10,6 +12,10 @@ use tokio::task;
 
 use tracing::instrument;
 
+/// Posts the position of user with a valid key.
+/// - `Path(path)` is the path of the URL.
+/// - `State(state)` is the application state.
+/// - `body` is the http body of the request.
 #[instrument(skip_all)]
 pub async fn post_position(
     Path(key): Path<String>,

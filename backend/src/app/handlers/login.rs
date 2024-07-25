@@ -1,3 +1,5 @@
+//! This module defines the handler for logging in.
+
 use crate::app::handlers::utils::{extract_session_id, lookup_hash};
 use crate::app::{AppState, SessionState};
 use crate::app::{SESSION_ID_COOKIE_NAME, SESSION_TTL};
@@ -21,6 +23,9 @@ use tokio::task;
 
 use tracing::instrument;
 
+/// Makes a session cookie for a newly logged in user.
+/// - `name` is the name of the user who is logging in.
+/// - `State(state)` is the application state.
 fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
     let mut rng = rand::thread_rng();
     let session_id: u128 = rng.gen();
@@ -42,6 +47,10 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
         .to_string()
 }
 
+/// Logs a user in if it is not already logged in.
+/// - `Query(query)` is the query from the URL.
+/// - `headers` are the http headers.
+/// - `State(state)` is the application state.
 #[instrument(skip_all)]
 pub async fn login(
     Query(query): Query<HashMap<String, String>>,

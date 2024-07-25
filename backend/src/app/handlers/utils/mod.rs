@@ -1,3 +1,5 @@
+//! This module defines some utility functions to handle requests.
+
 use crate::app::UserEntry;
 use crate::app::SESSION_ID_COOKIE_NAME;
 
@@ -10,6 +12,13 @@ use cookie::{Cookie, CookieJar};
 use hyper::header;
 use hyper::header::{HeaderMap, HeaderValue};
 
+/// Looks up a name to a given password in a users database and returns `None` if it was not found.
+/// - `password` is the given password.
+/// - `users` is the users database.
+///
+/// # Notes
+///
+/// This function is compute heavy.
 pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<String> {
     for user in users {
         match bcrypt::verify(password, &user.hash) {
@@ -28,6 +37,9 @@ pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<String> {
     None
 }
 
+/// Looks up a hash to a given name in a users database and returns `None` if it was not found.
+/// - `name` is the given name.
+/// - `users` is the users database.
 pub fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
     for user in users {
         if user.name == name {
@@ -37,6 +49,12 @@ pub fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
     None
 }
 
+/// Parses a cookie header into cookie jar.
+/// - `cookies_value` is the cookie header.
+///
+/// # Errors
+///
+/// An error is returned if the cookie header contains chars other than visible ASCII.
 fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     match cookies_value.to_str() {
         Ok(cookies_str) => {
@@ -64,6 +82,16 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     }
 }
 
+/// Extracts the session id cookie from the http headers.
+/// - `headers` are the http headers.
+///
+/// # Errors
+///
+/// An error is returned if
+/// - there is no cookie header.
+/// - parsing the cookie header fails.
+/// - there is no session id cookie.
+/// - the session id cookie is not an integer.
 pub fn extract_session_id(headers: HeaderMap) -> Result<u128, Response> {
     match headers.get(header::COOKIE) {
         Some(cookies_value) => match parse_cookies(cookies_value) {

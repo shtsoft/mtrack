@@ -1,3 +1,6 @@
+//! This module defines the application and its state.
+//! Additionally, the module declares a submodule with the handlers.
+
 pub mod handlers;
 
 use handlers::get_positions::get_positions;
@@ -29,28 +32,35 @@ use tokio_rustls::server::TlsStream;
 
 use tower::Service;
 
+/// The number of time units a new session is alive.
 pub const SESSION_TTL: u8 = 24;
+/// The length of a session time unit in seconds.
 const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 
+/// The name of the session id cookie.
 pub const SESSION_ID_COOKIE_NAME: &str = "sessionID";
 
+/// Abstracts coordinates.
 #[derive(Deserialize, Serialize)]
 pub struct Coordinates {
     latitude: f32,
     longitude: f32,
 }
 
+/// Abstracts session state.
 pub struct SessionState {
     name: String,
     ttl: u8,
 }
 
+/// Abstracts entries in the user databases.
 #[derive(Deserialize, Clone)]
 pub struct UserEntry {
     name: String,
     hash: String,
 }
 
+/// Abstracts the application state.
 pub struct AppState {
     pub sessions: HashMap<u128, SessionState>,
     pub positions: HashMap<String, Coordinates>,
@@ -58,6 +68,8 @@ pub struct AppState {
     pub upload_users: Vec<UserEntry>,
 }
 
+/// Prunes the application state from expired sessions.
+/// - `state` is the application state.
 fn prune_sessions(state: &Arc<RwLock<AppState>>) {
     let mut dead_sessions = Vec::new();
 
@@ -76,6 +88,9 @@ fn prune_sessions(state: &Arc<RwLock<AppState>>) {
     }
 }
 
+/// Defines the application.
+/// - `tls_socket` is the TLS connection the server runs on.
+/// - `state` is the application state.
 pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState>>) {
     tracing::debug!("TcpStream from proxy to downstream: {:?}", tls_socket);
 

@@ -1,3 +1,5 @@
+//! This module defines the handler for logging out.
+
 use crate::app::handlers::utils::extract_session_id;
 use crate::app::AppState;
 use crate::app::SESSION_ID_COOKIE_NAME;
@@ -18,6 +20,9 @@ use time::OffsetDateTime;
 
 use tracing::instrument;
 
+/// Removes a session and return a cookie deleting the session id cookie on client.
+/// - `session_id` is the id of the session which is to be removed.
+/// - `State(state)` is the application state.
 fn delete_session_cookie(
     session_id: u128,
     state: &Arc<RwLock<AppState>>,
@@ -44,6 +49,9 @@ fn delete_session_cookie(
     }
 }
 
+/// Logs a logged in user out.
+/// - `headers` are the http headers.
+/// - `State(state)` is the application state.
 #[instrument(skip_all)]
 pub async fn logout(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
     match extract_session_id(headers) {

@@ -1,3 +1,5 @@
+//! This module defines some utility functions to run a server with TLS.
+
 use std::error::Error;
 use std::fmt::Debug;
 use std::fs::File;
@@ -23,11 +25,23 @@ use tokio_rustls::TlsAcceptor;
 
 use tracing::{Instrument, Span};
 
+/// Loads TLS certificates from a file.
+/// - `filename` is the file containing the certificates.
+///
+/// # Errors
+///
+/// An error is returned if opening the file fails.
 pub fn load_certs(filename: &str) -> std::io::Result<Vec<CertificateDer<'static>>> {
     let mut reader = BufReader::new(File::open(filename)?);
     rustls_pemfile::certs(&mut reader).collect()
 }
 
+/// Loads a TLS key from a file.
+/// - `filename` is the file containing the key.
+///
+/// # Errors
+///
+/// An error is returned if opening the file fails or if reading from the file fails.
 pub fn load_key(filename: &str) -> std::io::Result<PrivateKeyDer<'static>> {
     let mut reader = BufReader::new(File::open(filename)?);
     loop {
@@ -54,6 +68,19 @@ pub enum ServeError<E: Error> {
     Send(#[from] mpsc::error::SendError<JoinHandle<Result<(), E>>>),
 }
 
+/// Runs a server on each TLS connection it establishes.
+/// - `server` is the server which is run.
+/// - `addr` is the socket address of the listener of the TLS connection.
+/// - `state` is the state of the server.
+/// - `acceptor` is the TLS acceptor upgrading the TCP socket to a TLS connection.
+///
+/// # Errors
+///
+/// An error is returned if binding to `addr` fails or accepting a connection fails.
+///
+/// # Notes
+///
+/// This function only returns in the error case.
 pub async fn serve<S, F, State: Clone + Send>(
     server: S,
     addr: SocketAddr,
@@ -89,6 +116,7 @@ where
     }
 }
 
+/// Errors which can occur when handling tasks.
 #[derive(Debug, Error)]
 pub enum HandleError {
     #[error("{}", self)]
@@ -97,6 +125,13 @@ pub enum HandleError {
     Join(#[from] task::JoinError),
 }
 
+/// Runs a task until an interrupt signal is received aborting the task.
+/// - `handle_name` is the task name.
+/// - `handle` is the task handle.
+///
+/// # Errors
+///
+/// An error is returned if there is an underlying I/O error or if the task failed to execute to completion.
 pub async fn sigint_abort<T: Send>(
     handle_name: &str,
     handle: JoinHandle<T>,

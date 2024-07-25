@@ -1,3 +1,11 @@
+//! mtrack is a position tracking web app based on getting and posting positions via http requests.
+//!
+//! ## Design
+//!
+//! The idea is that a predefined set of users can upload their current position with a post request.
+//! The uploaded positions can then be downloaded with a get request by another set of predefined users.
+//! Both uploading and downloading is password protected.
+
 pub mod app;
 
 pub mod utils;
@@ -22,8 +30,10 @@ use tokio_rustls::TlsAcceptor;
 use tracing::subscriber;
 use tracing::{Instrument, Level};
 
+/// The name of the application.
 const NAME: &str = "mtrack";
 
+/// Abstracts the command line parameters.
 pub struct Args {
     pub verbose: bool,
     pub ip: Ipv4Addr,
@@ -34,15 +44,27 @@ pub struct Args {
     pub download_users: String,
 }
 
+/// Abstracts the configuration of the application.
 pub struct Config {
+    /// maximal tracing level of the application
     level: Level,
+    /// socket address to which the application binds
     addr: SocketAddr,
+    /// TLS server config used for connections
     server_config: ServerConfig,
+    /// database of the users who can upload their positions
     upload_users: Vec<UserEntry>,
+    /// data of the users who can download uploaded positions
     download_users: Vec<UserEntry>,
 }
 
 impl Config {
+    /// Creates a new configuration of the application.
+    /// - `args` are the commandline parameters.
+    ///
+    ///  # Errors
+    ///
+    ///  An error is returned if making the TLS server config fails or if loading one of the user databases fails.
     pub fn new(args: Args) -> Result<Self, Box<dyn std::error::Error>> {
         let level = if args.verbose {
             Level::TRACE
@@ -77,6 +99,12 @@ impl Config {
     }
 }
 
+/// Runs the application.
+/// - `config` is the configuration the application is run in.
+///
+///  # Errors
+///
+///  An error is returned if there is a problem with the aborted server.
 pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let subscriber = tracing_subscriber::fmt()
         .with_file(true)

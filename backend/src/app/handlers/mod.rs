@@ -1,3 +1,5 @@
+//! This module declares the handler submodules.
+
 pub mod get_positions;
 pub mod health_check;
 pub mod login;

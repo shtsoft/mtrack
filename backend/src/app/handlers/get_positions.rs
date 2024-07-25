@@ -1,3 +1,5 @@
+//! This module defines the handler for getting positions.
+
 use crate::app::handlers::utils::extract_session_id;
 use crate::app::AppState;
 
@@ -12,6 +14,9 @@ use hyper::header::HeaderMap;
 
 use tracing::instrument;
 
+/// Gets the positions after checking for a valid session.
+/// - `headers` are the http headers.
+/// - `State(state)` is the application state.
 #[instrument(skip_all)]
 pub async fn get_positions(
     headers: HeaderMap,
