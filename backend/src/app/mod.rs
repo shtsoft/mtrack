@@ -37,7 +37,7 @@ pub const SESSION_TTL: u8 = 24;
 /// The length of a session time unit in seconds.
 const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 
-/// The name of the session id cookie.
+/// The name of the session ID cookie.
 pub const SESSION_ID_COOKIE_NAME: &str = "sessionID";
 
 /// A type of names.

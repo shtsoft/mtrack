@@ -83,7 +83,7 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     }
 }
 
-/// Extracts the session id cookie from the http headers.
+/// Extracts the session ID cookie from the http headers.
 /// - `headers` are the http headers.
 ///
 /// # Errors
@@ -91,8 +91,8 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
 /// An error is returned if
 /// - there is no cookie header.
 /// - parsing the cookie header fails.
-/// - there is no session id cookie.
-/// - the session id cookie is not an integer.
+/// - there is no session ID cookie.
+/// - the session ID cookie is not an integer.
 pub fn extract_session_id(headers: HeaderMap) -> Result<SessionID, Response> {
     match headers.get(header::COOKIE) {
         Some(cookies_value) => match parse_cookies(cookies_value) {

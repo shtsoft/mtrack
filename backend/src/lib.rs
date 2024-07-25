@@ -54,7 +54,7 @@ pub struct Config {
     server_config: ServerConfig,
     /// database of the users who can upload their positions
     upload_users: Vec<UserEntry>,
-    /// data of the users who can download uploaded positions
+    /// database of the users who can download uploaded positions
     download_users: Vec<UserEntry>,
 }
 

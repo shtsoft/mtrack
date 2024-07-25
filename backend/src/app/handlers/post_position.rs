@@ -12,7 +12,7 @@ use tokio::task;
 
 use tracing::instrument;
 
-/// Posts the position of user with a valid key.
+/// Posts the position of a user with a valid key.
 /// - `Path(path)` is the path of the URL.
 /// - `State(state)` is the application state.
 /// - `body` is the http body of the request.

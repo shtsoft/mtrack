@@ -21,8 +21,8 @@ use time::OffsetDateTime;
 
 use tracing::instrument;
 
-/// Removes a session and return a cookie deleting the session id cookie on client.
-/// - `session_id` is the id of the session which is to be removed.
+/// Removes a session and returns a cookie deleting the session ID cookie on the client.
+/// - `session_id` is the ID of the session which is to be removed.
 /// - `State(state)` is the application state.
 fn delete_session_cookie(
     session_id: SessionID,
