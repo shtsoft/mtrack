@@ -129,3 +129,75 @@ pub fn extract_session_id(headers: HeaderMap) -> Result<u128, Response> {
             .expect("Impossible error when building response.")),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use hyper::header;
+    use hyper::header::{HeaderMap, HeaderValue};
+
+    const HASHFOO: &str = "$2a$04$hu2ZTKvt/3px6oAj5XVxiOs1mRQcinxBJgGFNLF80JUSJQyMdWQma";
+    const PASSWORDFOO: &str = "0000";
+    const PASSWORDBAD: &str = "0";
+
+    const COOKIE: &str = "a=123; b=456";
+    const GOOD_ID: &str = "sessionID=1234";
+    const BAD_CHAR: &str = "ß";
+    const BAD_COOKIE: &str = "foo=bar";
+    const BAD_ID: &str = "sessionID=xyz";
+
+    #[test]
+    fn test_lookup_name() {
+        let mut users = Vec::new();
+        let user = UserEntry {
+            name: "foo".to_string(),
+            hash: HASHFOO.to_string(),
+        };
+        users.push(user);
+
+        assert!(lookup_name(PASSWORDFOO, &users).is_some());
+        assert!(lookup_name(PASSWORDBAD, &users).is_none());
+    }
+
+    #[test]
+    fn test_lookup_hash() {
+        let mut users = Vec::new();
+        let user = UserEntry {
+            name: "Foo".to_string(),
+            hash: HASHFOO.to_string(),
+        };
+        users.push(user);
+
+        assert!(lookup_hash("Foo", &users).is_some());
+        assert!(lookup_hash("Bar", &users).is_none());
+    }
+
+    #[test]
+    fn test_parse_cookies() {
+        assert!(parse_cookies(&HeaderValue::from_str(COOKIE).unwrap()).is_ok());
+        assert!(parse_cookies(&HeaderValue::from_str(BAD_CHAR).unwrap()).is_err());
+    }
+
+    #[test]
+    fn test_extract_session_id() {
+        let mut headers = HeaderMap::new();
+        headers.insert(header::COOKIE, GOOD_ID.parse().unwrap());
+        assert!(extract_session_id(headers).is_ok());
+
+        let headers = HeaderMap::new();
+        assert!(extract_session_id(headers).is_err());
+
+        let mut headers = HeaderMap::new();
+        headers.insert(header::COOKIE, BAD_CHAR.parse().unwrap());
+        assert!(extract_session_id(headers).is_err());
+
+        let mut headers = HeaderMap::new();
+        headers.insert(header::COOKIE, BAD_COOKIE.parse().unwrap());
+        assert!(extract_session_id(headers).is_err());
+
+        let mut headers = HeaderMap::new();
+        headers.insert(header::COOKIE, BAD_ID.parse().unwrap());
+        assert!(extract_session_id(headers).is_err());
+    }
+}
