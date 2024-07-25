@@ -3,6 +3,7 @@
 use crate::app::handlers::utils::extract_session_id;
 use crate::app::AppState;
 use crate::app::SESSION_ID_COOKIE_NAME;
+use crate::app::{Name, SessionID};
 
 use std::sync::{Arc, RwLock};
 
@@ -24,9 +25,9 @@ use tracing::instrument;
 /// - `session_id` is the id of the session which is to be removed.
 /// - `State(state)` is the application state.
 fn delete_session_cookie(
-    session_id: u128,
+    session_id: SessionID,
     state: &Arc<RwLock<AppState>>,
-) -> Result<(String, String), Response> {
+) -> Result<(String, Name), Response> {
     let sessions = &mut state.write().expect("Poisoned lock.").sessions;
     match sessions.remove(&session_id) {
         Some(session_state) => Ok((

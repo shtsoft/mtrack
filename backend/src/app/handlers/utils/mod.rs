@@ -1,5 +1,6 @@
 //! This module defines some utility functions to handle requests.
 
+use crate::app::{Name, SessionID};
 use crate::app::UserEntry;
 use crate::app::SESSION_ID_COOKIE_NAME;
 
@@ -19,7 +20,7 @@ use hyper::header::{HeaderMap, HeaderValue};
 /// # Notes
 ///
 /// This function is compute heavy.
-pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<String> {
+pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<Name> {
     for user in users {
         match bcrypt::verify(password, &user.hash) {
             Ok(verified) => {
@@ -92,11 +93,11 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
 /// - parsing the cookie header fails.
 /// - there is no session id cookie.
 /// - the session id cookie is not an integer.
-pub fn extract_session_id(headers: HeaderMap) -> Result<u128, Response> {
+pub fn extract_session_id(headers: HeaderMap) -> Result<SessionID, Response> {
     match headers.get(header::COOKIE) {
         Some(cookies_value) => match parse_cookies(cookies_value) {
             Ok(jar) => match jar.get(SESSION_ID_COOKIE_NAME) {
-                Some(cookie) => match cookie.value().parse::<u128>() {
+                Some(cookie) => match cookie.value().parse::<SessionID>() {
                     Ok(session_id) => Ok(session_id),
                     Err(err) => {
                         tracing::warn!(

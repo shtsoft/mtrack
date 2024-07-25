@@ -40,6 +40,12 @@ const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 /// The name of the session id cookie.
 pub const SESSION_ID_COOKIE_NAME: &str = "sessionID";
 
+/// A type of names.
+type Name = String;
+
+/// A type of session IDs.
+type SessionID = u128;
+
 /// Abstracts coordinates.
 #[derive(Deserialize, Serialize)]
 pub struct Coordinates {
@@ -49,21 +55,21 @@ pub struct Coordinates {
 
 /// Abstracts session state.
 pub struct SessionState {
-    name: String,
+    name: Name,
     ttl: u8,
 }
 
 /// Abstracts entries in the user databases.
 #[derive(Deserialize, Clone)]
 pub struct UserEntry {
-    name: String,
+    name: Name,
     hash: String,
 }
 
 /// Abstracts the application state.
 pub struct AppState {
-    pub sessions: HashMap<u128, SessionState>,
-    pub positions: HashMap<String, Coordinates>,
+    pub sessions: HashMap<SessionID, SessionState>,
+    pub positions: HashMap<Name, Coordinates>,
     pub download_users: Vec<UserEntry>,
     pub upload_users: Vec<UserEntry>,
 }
