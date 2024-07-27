@@ -1,5 +1,4 @@
 import { Favicon } from "./components/favicon";
-import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 import { Nav } from "./components/nav";
 import { Page } from "./_page";
@@ -15,19 +14,29 @@ function CSS() {
 function Content() {
   return (
     <>
-      <Nav />
-      <Header />
-      <div id="content">
+      <div className="vh-10 dark">
+        <Nav />
       </div>
-      <hr />
-      <Footer />
+      <div id="layout" className="vh-90">
+        <Header />
+        <div id="content">
+          <div className="lskew dark">
+          </div>
+          <div className="rskew dark">
+          </div>
+          <div className="vh-50 map">
+            <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
 
 function JS() {
   return (
-    <script src="/assets/app/js/mtrack.js"></script>
+    <>
+    </>
   );
 }
 
