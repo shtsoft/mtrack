@@ -1,0 +1,215 @@
+:root {
+  --dark: rgba(40, 40, 40, 1);
+  --light: rgba(255, 255, 255, 1);
+  --lightless: rgba(255, 255, 255, 0.9);
+  --lightsemi: rgba(255, 255, 255, 0.5);
+  --anchor: rgba(0, 0, 0, 0.5);
+  --select: rgba(32, 128, 176, 1);
+  --lineheight: 1.5;
+}
+
+/* || Base */
+
+html {
+  font-size: 20px;
+}
+
+@media only screen and (min-width: 576px) {
+  html {
+    font-size: 21px;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  html {
+    font-size: 22px;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  html {
+    font-size: 24px;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  font-size: 1rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--lineheight);
+}
+
+p {
+  line-height: var(--lineheight);
+}
+
+ul, ol, dl {
+  font-size: 1.1rem;
+}
+
+ul {
+  list-style-type: square;
+}
+
+li, dt, dd {
+  line-height: var(--lineheight);
+}
+
+dt {
+  font-weight: bolder;
+}
+
+a {
+  text-decoration: none;
+  color: var(--anchor);
+}
+
+a:hover {
+  color: var(--select);
+}
+
+::selection {
+  background-color: var(--select);
+  color: white;
+}
+
+img::selection {
+  background-color: transparent;
+  color: white;
+}
+
+/* || Utility */
+
+.dark {
+  background-attachment: scroll;
+  background-color: var(--dark);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--light);
+}
+
+.nobullets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sitelink {
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  letter-spacing: 0.06rem;
+}
+
+.tablist {
+  display: flex;
+  flex-direction: row;
+}
+
+.vh-10 {
+  height: 10vh;
+}
+
+.vh-40 {
+  height: 40vh;
+}
+
+.vh-50 {
+  height: 50vh;
+}
+
+.vh-90 {
+  height: 90vh;
+}
+
+/* || Sitewide */
+
+#layout {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: auto 1fr auto auto;
+}
+
+nav {
+  display: flex;
+  justify-content: right;
+  padding: 0.5rem;
+}
+
+nav > button {
+  display: none;
+}
+
+nav > ul {
+  flex-basis: auto;
+}
+
+nav > ul > li > a {
+  padding: 0.5rem;
+}
+
+header {
+  z-index: 5;
+  text-align: center;
+}
+
+header > h1 {
+  margin-top: 10vh;
+  font-size: 5vh;
+}
+
+nav a {
+  color: var(--lightless);
+}
+
+nav a:hover {
+  color: var(--lightsemi);
+}
+
+/* || Skew */
+
+.lskew {
+  position: absolute;
+  top: 35%;
+  bottom: 50%;
+  right: 50%;
+  left: 40%;
+  transform: skew(0, 45deg);
+}
+
+.rskew {
+  position: absolute;
+  top: 35%;
+  bottom: 50%;
+  right: 40%;
+  left: 50%;
+  transform: skew(0, 135deg);
+}
+
+.map {
+  background-attachment: scroll;
+  background-image: url(/assets/vendor/images/map.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* || Login Form */
+
+.login-form {
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  right: 25%;
+  left: 25%;
+  border: 10px solid var(--dark);
+  border-radius: 20px;
+  background-attachment: scroll;
+  background-color: var(--light);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
