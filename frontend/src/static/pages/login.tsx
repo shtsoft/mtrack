@@ -14,7 +14,14 @@ function CSS() {
 
 function Content() {
   return (
-    <div id="content">
+    <div id="layout">
+      <div className="vh-50 dark">
+      </div>
+      <div className="login-form">
+      </div>
+      <div className="vh-50 map">
+        <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>
+      </div>
     </div>
   );
 }
