@@ -1,5 +1,4 @@
 import { Favicon } from "./components/favicon";
-import { Header } from "./components/header";
 import { Nav } from "./components/nav";
 import { Page } from "./_page";
 
