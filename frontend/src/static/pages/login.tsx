@@ -1,4 +1,5 @@
 import { Favicon } from "./components/favicon";
+import { LoginForm } from "./components/login-form";
 import { Page } from "./_page";
 
 import React from "react";
@@ -15,13 +16,7 @@ function CSS() {
 function Content() {
   return (
     <div id="layout">
-      <div className="vh-50 dark">
-      </div>
-      <div className="login-form">
-      </div>
-      <div className="vh-50 map">
-        <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>
-      </div>
+      <LoginForm />
     </div>
   );
 }

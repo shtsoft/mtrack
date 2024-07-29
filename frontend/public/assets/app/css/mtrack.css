@@ -3,6 +3,8 @@
   --light: rgba(255, 255, 255, 1);
   --lightless: rgba(255, 255, 255, 0.9);
   --lightsemi: rgba(255, 255, 255, 0.5);
+  --highlight: rgba(255, 255, 180, 1);
+  --highlightsemi: rgba(255, 255, 180, 0.5);
   --anchor: rgba(0, 0, 0, 0.5);
   --select: rgba(32, 128, 176, 1);
   --lineheight: 1.5;
@@ -92,10 +94,45 @@ img::selection {
   color: var(--light);
 }
 
+.highlight {
+  background-attachment: scroll;
+  background-color: var(--highlight);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--dark);
+}
+
+.map {
+  background-attachment: scroll;
+  background-image: url(/assets/vendor/images/map.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .nobullets {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.skewleft {
+  position: absolute;
+  top: 35%;
+  bottom: 50%;
+  right: 50%;
+  left: 40%;
+  transform: skew(0, 45deg);
+}
+
+.skewright {
+  position: absolute;
+  top: 35%;
+  bottom: 50%;
+  right: 40%;
+  left: 50%;
+  transform: skew(0, 135deg);
 }
 
 .sitelink {
@@ -133,6 +170,18 @@ img::selection {
   grid-template-rows: auto 1fr auto auto;
 }
 
+header {
+  z-index: 5;
+  text-align: center;
+}
+
+header > h1 {
+  margin-top: 10vh;
+  font-size: 5vh;
+}
+
+/* || Nav */
+
 nav {
   display: flex;
   justify-content: right;
@@ -151,16 +200,6 @@ nav > ul > li > a {
   padding: 0.5rem;
 }
 
-header {
-  z-index: 5;
-  text-align: center;
-}
-
-header > h1 {
-  margin-top: 10vh;
-  font-size: 5vh;
-}
-
 nav a {
   color: var(--lightless);
 }
@@ -169,47 +208,62 @@ nav a:hover {
   color: var(--lightsemi);
 }
 
-/* || Skew */
-
-.lskew {
-  position: absolute;
-  top: 35%;
-  bottom: 50%;
-  right: 50%;
-  left: 40%;
-  transform: skew(0, 45deg);
-}
-
-.rskew {
-  position: absolute;
-  top: 35%;
-  bottom: 50%;
-  right: 40%;
-  left: 50%;
-  transform: skew(0, 135deg);
-}
-
-.map {
-  background-attachment: scroll;
-  background-image: url(/assets/vendor/images/map.png);
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
 /* || Login Form */
 
-.login-form {
-  position: absolute;
-  top: 25%;
-  bottom: 25%;
-  right: 25%;
-  left: 25%;
-  border: 10px solid var(--dark);
+form.login {
+  margin: 30% 10%;
   border-radius: 20px;
-  background-attachment: scroll;
-  background-color: var(--light);
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  text-align: center;
+}
+
+@media only screen and (min-width: 576px) {
+  form.login {
+    margin: 25% 15%;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  form.login {
+    margin: 20% 25%;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  form.login {
+    margin: 10% 30%;
+  }
+}
+
+form.login > ul > li {
+  margin: 1rem;
+}
+
+form.login > ul > li > label {
+  display: block;
+  text-align: left;
+  color: var(--light);
+}
+
+form.login > ul > li > input {
+  display: block;
+  width: 100%;
+  padding: 0.25rem;
+  font-size: 1rem;
+}
+
+form.login > ul > li > input:focus {
+  border: 1px solid var(--light);
+}
+
+form.login > ul > li > button {
+  display: block;
+  cursor: pointer;
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-weight: bolder;
+}
+
+form.login > ul > li > button:hover {
+  background: var(--highlightsemi);
 }

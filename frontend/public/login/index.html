@@ -12,11 +12,19 @@
   </head>
   <body>
     <div id="layout">
-      <div class="vh-50 dark"></div>
-      <div class="login-form"></div>
-      <div class="vh-50 map">
-        <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>
-      </div>
+      <form action="/login" method="post" class="login dark">
+        <ul class="nobullets">
+          <li>
+            <label for="name">Name</label
+            ><input type="text" id="name" name="name" required="" />
+          </li>
+          <li>
+            <label for="password">Password</label
+            ><input type="password" id="password" name="password" required="" />
+          </li>
+          <li><button type="submit" class="highlight">Log in</button></li>
+        </ul>
+      </form>
     </div>
   </body>
 </html>
