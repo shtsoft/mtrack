@@ -18,11 +18,15 @@ function Content() {
         <Nav />
       </div>
       <div id="layout" className="vh-90">
-        <Header />
+        <header className="vh-40 dark">
+          <h1>
+            mtrack
+          </h1>
+        </header>
         <div id="content">
-          <div className="lskew dark">
+          <div className="skewleft dark">
           </div>
-          <div className="rskew dark">
+          <div className="skewright dark">
           </div>
           <div className="vh-50 map">
             <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>
