@@ -7,7 +7,6 @@ import React from "react";
 function CSS() {
   return (
     <>
-      <link rel="stylesheet" href="/assets/app/css/login.css" />
       <link rel="stylesheet" href="/assets/app/css/mtrack.css" />
     </>
   );
