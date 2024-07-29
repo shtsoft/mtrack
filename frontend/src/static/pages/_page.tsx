@@ -3,7 +3,6 @@ import React from "react";
 type HeadProps = {
   description: string,
   title: string,
-  canonical: string,
   css: () => React.JSX.Element,
   favicon: () => React.JSX.Element
 }
@@ -23,7 +22,6 @@ function Head(props: HeadProps) {
 
       <CSS />
       <Favicon />
-      <link rel="canonical" href={props.canonical} />
     </head>
   );
 }
@@ -55,7 +53,6 @@ export function Page(props: PageProps) {
       <Head
         description={props.head.description}
         title={props.head.title}
-        canonical={props.head.canonical}
         css={props.head.css}
         favicon={props.head.favicon} />
       <Body content={props.body.content} js={props.body.js} />
