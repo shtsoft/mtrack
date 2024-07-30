@@ -103,6 +103,10 @@ img::selection {
   color: var(--dark);
 }
 
+.highlight-color {
+  color: var(--highlight);
+}
+
 .logoblock {
   display: block;
   width: 200px;

@@ -19,7 +19,7 @@ function Content() {
       <div id="layout" className="vh-90">
         <header className="vh-40 dark">
           <h1>
-            mtrack
+            <span className="highlight-color">m</span>track
           </h1>
         </header>
         <div id="content">
