@@ -103,6 +103,12 @@ img::selection {
   color: var(--dark);
 }
 
+.logoblock {
+  display: block;
+  width: 200px;
+  margin: 100px auto;
+}
+
 .map {
   background-attachment: scroll;
   background-image: url(/assets/vendor/images/map.png);
@@ -211,26 +217,26 @@ nav a:hover {
 /* || Login Form */
 
 form.login {
-  margin: 30% 10%;
+  margin: 0 10%;
   border-radius: 20px;
   text-align: center;
 }
 
 @media only screen and (min-width: 576px) {
   form.login {
-    margin: 25% 15%;
+    margin: 0 20%;
   }
 }
 
 @media only screen and (min-width: 992px) {
   form.login {
-    margin: 20% 25%;
+    margin: 0 30%;
   }
 }
 
 @media only screen and (min-width: 1200px) {
   form.login {
-    margin: 10% 30%;
+    margin: 0 35%;
   }
 }
 

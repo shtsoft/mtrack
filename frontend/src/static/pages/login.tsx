@@ -15,6 +15,7 @@ function CSS() {
 function Content() {
   return (
     <div id="layout">
+      <img className="logoblock" src="/assets/app/images/mtrackpath.svg" alt="mtrackpath" />
       <LoginForm />
     </div>
   );
