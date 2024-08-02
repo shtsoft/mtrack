@@ -6,6 +6,7 @@ import React from "react";
 function CSS() {
   return (
     <>
+      <link rel="stylesheet" href="/assets/vendor/css/leaflet.css" />
       <link rel="stylesheet" href="/assets/app/css/map.css" />
       <link rel="stylesheet" href="/assets/app/css/mtrack.css" />
     </>
@@ -26,7 +27,7 @@ function Content() {
 
 function JS() {
   return (
-    <script src="/assets/app/js/map.js"></script>
+    <script src="/assets/app/js/map.js"></script> 
   );
 }
 
