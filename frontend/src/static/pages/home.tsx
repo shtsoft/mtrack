@@ -38,8 +38,7 @@ function Content() {
 
 function JS() {
   return (
-    <>
-    </>
+    <script src="/assets/app/js/mtrack.js"></script> 
   );
 }
 
