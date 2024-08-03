@@ -25,14 +25,20 @@ export function TrackerNumbers({ positions }: TrackerNumbersParameters) {
   for (const key in positions) {
     let lat = positions[key].latitude;
     let lng = positions[key].longitude;
-    list_items.push(<li>{key}:{lat}:{lng}</li>)
+    list_items.push(
+      <>
+        <dt key={key}>{key}</dt>
+        <dd>{lat} (Latitude)</dd>
+        <dd>{lng} (Longitude)</dd>
+      </>
+    )
   }
 
   return (
     <div id="numbers">
-      <ul>
+      <dl>
         {list_items}
-      </ul>
+      </dl>
     </div>
   )
 }
