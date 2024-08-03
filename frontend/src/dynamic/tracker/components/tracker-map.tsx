@@ -12,6 +12,9 @@ function private_placeholder_function(): number {
   return 0
 }
 
+const INITIAL_MAP_ZOOM = 2;
+const INITIAL_MAP_POSITION: L.LatLngExpression = [0.0, 0.0];
+
 let map: L.Map;
 let icon: L.Icon;
 let markers: Map<String, L.Marker> = new Map();
@@ -33,7 +36,7 @@ type TrackerMapParameters = {
  */
 export function TrackerMap({ positions }: TrackerMapParameters) {
   useEffect(() => {
-    map = L.map('map').setView([0.0, 0.0], 2);
+    map = L.map('map').setView(INITIAL_MAP_POSITION, INITIAL_MAP_ZOOM);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,

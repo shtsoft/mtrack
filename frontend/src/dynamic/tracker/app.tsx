@@ -10,6 +10,8 @@ import { TrackerNumbers } from "./components/tracker-numbers";
 import React from "react";
 import { useEffect, useState } from "react";
 
+const GET_POSITION_INTERVAL = 1000;
+
 /**
  * Describe what the function does ...
  * @param {any} `arg1` - Describe the meaning ...
@@ -37,7 +39,7 @@ export function App() {
       setPositions(response);
     };
 
-    id = setInterval(getPosition, 1000);
+    id = setInterval(getPosition, GET_POSITION_INTERVAL);
   });
 
   return (
