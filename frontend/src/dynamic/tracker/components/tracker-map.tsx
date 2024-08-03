@@ -7,17 +7,32 @@ import L from "leaflet";
 import React from "react";
 import { useEffect, useState } from "react";
 
-
-function private_placeholder_function(): number {
-  return 0
-}
-
 const INITIAL_MAP_ZOOM = 2;
 const INITIAL_MAP_POSITION: L.LatLngExpression = [0.0, 0.0];
 
 let map: L.Map;
 let icon: L.Icon;
 let markers: Map<String, L.Marker> = new Map();
+
+function removeMarkersFromMap(map: L.Map, markers: Map<String, L.Marker>): void {
+  for (const key of markers.keys()) {
+    markers.get(key).removeFrom(map);
+  }
+}
+
+function setMarkersToPositions(positions: any, markers: Map<String, L.Marker>): void {
+  for (const key in positions) {
+    let lat = positions[key].latitude;
+    let lng = positions[key].longitude;
+    markers.set(key, L.marker([lat, lng], { icon: icon, title: key }));
+  }
+}
+
+function addMarkersToMap(map: L.Map, markers: Map<String, L.Marker>): void {
+  for (const key of markers.keys()) {
+    markers.get(key).addTo(map);
+  }
+}
 
 type TrackerMapParameters = {
   positions: any
@@ -50,19 +65,9 @@ export function TrackerMap({ positions }: TrackerMapParameters) {
   }, []);
 
   useEffect(() => {
-    for (const key of markers.keys()) {
-      markers.get(key).removeFrom(map);
-    }
-
-    for (const key in positions) {
-      let lat = positions[key].latitude;
-      let lng = positions[key].longitude;
-      markers.set(key, L.marker([lat, lng], { icon: icon, title: key }));
-    }
-
-    for (const key of markers.keys()) {
-      markers.get(key).addTo(map);
-    }
+    removeMarkersFromMap(map, markers);
+    setMarkersToPositions(positions, markers)
+    addMarkersToMap(map, markers);
   }, [positions]);
 
   return (

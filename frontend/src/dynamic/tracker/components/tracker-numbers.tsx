@@ -4,10 +4,6 @@
 
 import React from "react";
 
-function private_placeholder_function(): number {
-  return 0
-}
-
 type TrackerNumbersParameters = {
   positions: any
 }
