@@ -7,7 +7,6 @@ function CSS() {
   return (
     <>
       <link rel="stylesheet" href="/assets/vendor/css/leaflet.css" />
-      <link rel="stylesheet" href="/assets/app/css/tracker.css" />
       <link rel="stylesheet" href="/assets/app/css/mtrack.css" />
     </>
   );
