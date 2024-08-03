@@ -5,7 +5,7 @@
 import L from "leaflet";
 
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const INITIAL_MAP_ZOOM = 2;
 const INITIAL_MAP_POSITION: L.LatLngExpression = [0.0, 0.0];
@@ -75,4 +75,3 @@ export function TrackerMap({ positions }: TrackerMapParameters) {
     </div>
   )
 }
-
