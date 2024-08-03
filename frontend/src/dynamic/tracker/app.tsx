@@ -29,7 +29,7 @@ export function App() {
   useEffect(() => {
     let id: NodeJS.Timeout;
 
-    function getPosition(): void {
+    const getPosition = () => {
       clearInterval(id);
 
       const response = {

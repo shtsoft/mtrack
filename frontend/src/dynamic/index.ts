@@ -1,6 +1,6 @@
 const m: HTMLElement = document.querySelector("header > h1 > span");
 
-function toggle_highlight_color() {
+const toggle_highlight_color = () => {
   if (m.getAttribute("class") === "highlight-color") {
     m.setAttribute("class", "");
   } else {
