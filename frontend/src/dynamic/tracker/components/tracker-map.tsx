@@ -71,7 +71,7 @@ export function TrackerMap({ positions }: TrackerMapParameters) {
   }, [positions]);
 
   return (
-    <div id="map">
+    <div id="map" className="vh-100">
     </div>
   )
 }
