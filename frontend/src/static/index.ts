@@ -1,6 +1,6 @@
 import { Home } from "./pages/home";
 import { Login } from "./pages/login";
-import { Map } from "./pages/map";
+import { Tracker } from "./pages/tracker";
 
 import { writeFileSync } from "fs";
 
@@ -13,7 +13,7 @@ const outdir = "./public";
 const pages = [
   { route: "", element: Home },
   { route: "/login", element: Login },
-  { route: "/map", element: Map }];
+  { route: "/tracker", element: Tracker }];
 
 for (const page of pages) {
   prettier

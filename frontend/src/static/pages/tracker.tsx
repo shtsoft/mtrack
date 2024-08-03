@@ -7,7 +7,7 @@ function CSS() {
   return (
     <>
       <link rel="stylesheet" href="/assets/vendor/css/leaflet.css" />
-      <link rel="stylesheet" href="/assets/app/css/map.css" />
+      <link rel="stylesheet" href="/assets/app/css/tracker.css" />
       <link rel="stylesheet" href="/assets/app/css/mtrack.css" />
     </>
   );
@@ -27,14 +27,14 @@ function Content() {
 
 function JS() {
   return (
-    <script src="/assets/app/js/map.js"></script> 
+    <script src="/assets/app/js/tracker.js"></script>
   );
 }
 
-export function Map() {
+export function Tracker() {
   const hprops = {
     description: "",
-    title: "mtrack - Map",
+    title: "mtrack - Tracker",
     canonical: "",
     css: CSS,
     favicon: Favicon
