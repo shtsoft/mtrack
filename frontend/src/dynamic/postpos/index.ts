@@ -12,7 +12,7 @@ function postPosition(
       if (response.ok) {
         geostatus.textContent = "Posting positions ...";
       } else {
-        geostatus.textContent = "Error posting positions";
+        geostatus.textContent = `Error posting positions: ${response.body}`;
       }
     })
     .catch((error) => {
