@@ -1,5 +1,5 @@
 /** 
- * Describe the module ...
+ * This module defines a component tracking positions as numbers.
  */
 
 import React from "react";
@@ -9,15 +9,10 @@ type TrackerNumbersParameters = {
 }
 
 /**
- * Describe what the function does ...
- * @param {any} `arg1` - Describe the meaning ...
- * @param {any} `arg2` - Describe the meaning ...
+ * Renders a list of positions.
+ * @param {any} `positions` - The positions to render.
  *
- * Describe the side effects of the function ...
- *
- * Describe the preconditions, postconditions and invariants ...
- *
- * Provide additional information interesting to callers ...
+ * The positions should be a hash map from strings to pairs of numbers.
  */
 export function TrackerNumbers({ positions }: TrackerNumbersParameters) {
   const list_items = [];

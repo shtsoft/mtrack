@@ -1,7 +1,7 @@
 /**
- * Describe what the app is about ...
+ * The app allows to track positions as numbers as well as on a map.
  *
- * Describe the design of the app ...
+ * The idea is to fetch the positions from a remote server and have two subcomponents to visualize them as numbers and on a map, respectively.
  */
 
 import { TrackerMap } from "./components/tracker-map";
@@ -13,15 +13,9 @@ import { useEffect, useState } from "react";
 const GET_POSITION_INTERVAL = 1000;
 
 /**
- * Describe what the function does ...
- * @param {any} `arg1` - Describe the meaning ...
- * @param {any} `arg2` - Describe the meaning ...
+ * Combines the `TrackerNumbers`-component with the `TrackerMap`-component.
  *
- * Describe the side effects of the function ...
- *
- * Describe the preconditions, postconditions and invariants ...
- *
- * Provide additional information interesting to callers ...
+ * As a side effect the function fetches positions from the server and makes them available to its subcomponents.
  */
 export function App() {
   const [positions, setPositions] = useState({});

@@ -1,5 +1,5 @@
 /** 
- * Describe the module ...
+ * This module defines a component trackings positions on a map.
  */
 
 import L from "leaflet";
@@ -39,15 +39,10 @@ type TrackerMapParameters = {
 }
 
 /**
- * Describe what the function does ...
- * @param {any} `arg1` - Describe the meaning ...
- * @param {any} `arg2` - Describe the meaning ...
+ * Renders a map and marks positions on it.
+ * @param {any} `positions` - The positions marked on the map.
  *
- * Describe the side effects of the function ...
- *
- * Describe the preconditions, postconditions and invariants ...
- *
- * Provide additional information interesting to callers ...
+ * The positions should be a hash map from strings to pairs of numbers.
  */
 export function TrackerMap({ positions }: TrackerMapParameters) {
   useEffect(() => {
