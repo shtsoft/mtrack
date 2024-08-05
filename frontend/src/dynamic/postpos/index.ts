@@ -33,8 +33,8 @@ function geoSuccess(
   postPosition(geostatus, key, positionObject);
 }
 
-function geoError(status: HTMLParagraphElement): void {
-  status.textContent = "Unable to retrieve your location";
+function geoError(geostatus: HTMLParagraphElement): void {
+  geostatus.textContent = "Unable to retrieve your location";
 }
 
 const layout = document.querySelector("#layout");
