@@ -4,6 +4,7 @@ module.exports = {
   mode: "production",
   entry: {
     mtrack: "./src/dynamic/index.ts",
+    postpos: "./src/dynamic/postpos/index.ts",
     tracker: "./src/dynamic/tracker/index.tsx",
   },
   devtool: "source-map",

@@ -232,54 +232,54 @@ nav a:hover {
   color: var(--lightsemi);
 }
 
-/* || Login Form */
+/* || Form */
 
-form.login {
+form {
   margin: 0 10%;
   border-radius: 20px;
   text-align: center;
 }
 
 @media only screen and (min-width: 576px) {
-  form.login {
+  form {
     margin: 0 20%;
   }
 }
 
 @media only screen and (min-width: 992px) {
-  form.login {
+  form {
     margin: 0 30%;
   }
 }
 
 @media only screen and (min-width: 1200px) {
-  form.login {
+  form {
     margin: 0 35%;
   }
 }
 
-form.login > ul > li {
+form > ul > li {
   margin: 1rem;
 }
 
-form.login > ul > li > label {
+form > ul > li > label {
   display: block;
   text-align: left;
   color: var(--light);
 }
 
-form.login > ul > li > input {
+form > ul > li > input {
   display: block;
   width: 100%;
   padding: 0.25rem;
   font-size: 1rem;
 }
 
-form.login > ul > li > input:focus {
+form > ul > li > input:focus {
   border: 1px solid var(--light);
 }
 
-form.login > ul > li > button {
+form > ul > li > button {
   display: block;
   cursor: pointer;
   width: 100%;
@@ -288,6 +288,6 @@ form.login > ul > li > button {
   font-weight: bolder;
 }
 
-form.login > ul > li > button:hover {
+form > ul > li > button:hover {
   background: var(--highlightsemi);
 }

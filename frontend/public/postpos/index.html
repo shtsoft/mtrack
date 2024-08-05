@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="" />
-    <title>mtrack - Login</title>
+    <title>mtrack - Postpos</title>
     <link rel="stylesheet" href="/assets/app/css/mtrack.css" />
     <link
       rel="icon"
@@ -19,19 +19,18 @@
         src="/assets/app/images/mtrackpath.svg"
         alt="mtrackpath"
       />
-      <form action="/login" method="post" class="dark">
+      <form action="/postpos" method="post" class="dark">
         <ul class="nobullets">
           <li>
-            <label for="name">Name</label
-            ><input type="text" id="name" name="name" required="" />
+            <label for="key">Key</label
+            ><input type="password" id="key" name="key" required="" />
           </li>
           <li>
-            <label for="password">Password</label
-            ><input type="password" id="password" name="password" required="" />
+            <button type="submit" class="highlight">Start tracking</button>
           </li>
-          <li><button type="submit" class="highlight">Log in</button></li>
         </ul>
       </form>
     </div>
+    <script src="/assets/app/js/postpos.js"></script>
   </body>
 </html>

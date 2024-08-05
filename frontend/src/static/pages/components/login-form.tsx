@@ -2,7 +2,7 @@ import React from "react";
 
 export function LoginForm() {
   return (
-    <form action="/login" method="post" className="login dark">
+    <form action="/login" method="post" className="dark">
       <ul className="nobullets">
         <li>
           <label htmlFor="name">Name</label>
