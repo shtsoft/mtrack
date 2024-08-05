@@ -1,11 +1,12 @@
 function postPosition(
   geostatus: HTMLParagraphElement,
   key: String,
-  serverURL: URL,
   position: any
 ): void {
-  const requestURL = new URL(`${serverURL}positions/${key}`);
-  const request = new Request(requestURL, { method: "POST", body: `${JSON.stringify(position)}` });
+  const request = new Request(
+    `/positions/${key}`,
+    { method: "POST", body: `${JSON.stringify(position)}` }
+  );
   fetch(request)
     .then((response) => {
       if (response.ok) {
@@ -22,7 +23,6 @@ function postPosition(
 function geoSuccess(
   geostatus: HTMLParagraphElement,
   key: String,
-  serverURL: URL,
   position: GeolocationPosition
 ) {
   const latitude = position.coords.latitude;
@@ -30,14 +30,12 @@ function geoSuccess(
 
   const positionObject = { "latitude": latitude, "longitude": longitude };
 
-  postPosition(geostatus, key, serverURL, positionObject);
+  postPosition(geostatus, key, positionObject);
 }
 
 function geoError(status: HTMLParagraphElement): void {
   status.textContent = "Unable to retrieve your location";
 }
-
-const serverURL: URL = new URL("https://127.0.0.1:10443");
 
 const layout = document.querySelector("#layout");
 const keyForm = document.querySelector("form");
@@ -58,7 +56,7 @@ keyForm.addEventListener("submit", (event) => {
   } else {
     geoStatus.textContent = "Locating ...";
     navigator.geolocation.watchPosition(
-      (position) => geoSuccess(geoStatus, keyInput.value, serverURL, position),
+      (position) => geoSuccess(geoStatus, keyInput.value, position),
       () => geoError(geoStatus)
     );
   }
