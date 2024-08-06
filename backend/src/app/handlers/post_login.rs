@@ -4,11 +4,10 @@ use crate::app::handlers::utils::{extract_session_id, lookup_hash};
 use crate::app::{AppState, SessionState};
 use crate::app::{SESSION_ID_COOKIE_NAME, SESSION_TTL};
 
-use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use axum::body::Body;
-use axum::extract::{Query, State};
+use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Response;
 
@@ -19,9 +18,17 @@ use hyper::header::HeaderMap;
 
 use rand::prelude::*;
 
+use serde::Deserialize;
+
 use tokio::task;
 
 use tracing::instrument;
+
+#[derive(Deserialize)]
+struct Query {
+    name: String,
+    password: String,
+}
 
 /// Makes a session cookie for a newly logged in user.
 /// - `name` is the name of the user who is logging in.
@@ -53,9 +60,9 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
 /// - `State(state)` is the application state.
 #[instrument(skip_all)]
 pub async fn post_login(
-    Query(query): Query<HashMap<String, String>>,
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
+    body: String,
 ) -> Response {
     if let Ok(session_id) = extract_session_id(headers) {
         let sessions = &state.read().expect("Poisoned lock.").sessions;
@@ -69,8 +76,18 @@ pub async fn post_login(
         }
     }
 
-    let name = &query["name"];
-    let password = query["password"].clone();
+    let query: Query = match serde_qs::from_str(&body) {
+        Ok(query) => query,
+        Err(err) => {
+            tracing::warn!("Client posting invalid login query: {:?}", err);
+            return Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .body(Body::from("You must have valid login data."))
+                .expect("Impossible error when building response.");
+        }
+    };
+    let name = &query.name;
+    let password = query.password;
 
     // The following indirection is here to prevent a deadlock arising from the lifetime of the
     // guard.
@@ -85,7 +102,8 @@ pub async fn post_login(
                     let session_cookie = make_session_cookie(name, &state);
                     tracing::info!("User {} has logged in successfully", name);
                     Response::builder()
-                        .status(StatusCode::OK)
+                        .status(StatusCode::SEE_OTHER)
+                        .header(header::LOCATION, "/tracker")
                         .header(header::SET_COOKIE, session_cookie)
                         .body(Body::from("Log in succeeded."))
                         .expect("Impossible error when building response.")
