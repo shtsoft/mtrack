@@ -3,11 +3,15 @@
 
 pub mod handlers;
 
+use handlers::get_login::get_login;
 use handlers::get_positions::get_positions;
 use handlers::health_check::health_check;
-use handlers::login::login;
+use handlers::home::home;
 use handlers::logout::logout;
+use handlers::post_login::post_login;
 use handlers::post_position::post_position;
+use handlers::postpos::postpos;
+use handlers::tracker::tracker;
 
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -72,6 +76,7 @@ pub struct AppState {
     pub positions: HashMap<Name, Coordinates>,
     pub download_users: Vec<UserEntry>,
     pub upload_users: Vec<UserEntry>,
+    pub dist: String,
 }
 
 /// Prunes the application state from expired sessions.
@@ -112,8 +117,12 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
         .route("/health_check", get(health_check))
         .route("/positions/:key", post(post_position))
         .route("/positions", get(get_positions))
-        .route("/login", post(login))
+        .route("/login", post(post_login))
         .route("/logout", post(logout))
+        .route("/", get(home))
+        .route("/login", get(get_login))
+        .route("/postpos", get(postpos))
+        .route("/tracker", get(tracker))
         .with_state(state);
 
     if let Err(err) = http1::Builder::new()
