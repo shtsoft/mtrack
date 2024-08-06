@@ -30,7 +30,7 @@ export function TrackerNumbers({ positions }: TrackerNumbersParameters) {
   }
 
   return (
-    <div id="numbers" className="dark">
+    <div id="numbers" data-testid="numbers" className="dark">
       <dl>
         {list_items}
       </dl>
