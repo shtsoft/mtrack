@@ -36,6 +36,8 @@ use tokio_rustls::server::TlsStream;
 
 use tower::Service;
 
+use tower_http::services::ServeDir;
+
 /// The number of time units a new session is alive.
 pub const SESSION_TTL: u8 = 24;
 /// The length of a session time unit in seconds.
@@ -113,6 +115,7 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
         prune_sessions(&state_clone);
     });
 
+    let assets = state.read().expect("Poisoned lock.").dist.clone() + "/assets";
     let app = Router::new()
         .route("/health_check", get(health_check))
         .route("/positions/:key", post(post_position))
@@ -123,6 +126,7 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
         .route("/login", get(get_login))
         .route("/postpos", get(postpos))
         .route("/tracker", get(tracker))
+        .nest_service("/assets", ServeDir::new(assets))
         .with_state(state);
 
     if let Err(err) = http1::Builder::new()
