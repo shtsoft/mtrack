@@ -6,7 +6,7 @@ use helpers::{ADDR, NAMEFOO, PASSWORDBAD, PASSWORDFOO};
 const NAMEBAD: &str = "F";
 
 #[tokio::test]
-async fn test_login() {
+async fn test_post_login() {
     let (client, client_cookie) = make_clients();
 
     let response_ok = client

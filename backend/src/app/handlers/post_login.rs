@@ -52,7 +52,7 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
 /// - `headers` are the http headers.
 /// - `State(state)` is the application state.
 #[instrument(skip_all)]
-pub async fn login(
+pub async fn post_login(
     Query(query): Query<HashMap<String, String>>,
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
@@ -63,7 +63,7 @@ pub async fn login(
             tracing::info!("Client trying to log in while logged in");
             return Response::builder()
                 .status(StatusCode::SEE_OTHER)
-                .header(header::LOCATION, "/map")
+                .header(header::LOCATION, "/tracker")
                 .body(Body::from("You are already logged in."))
                 .expect("Impossible error when building response.");
         }
