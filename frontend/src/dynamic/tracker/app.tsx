@@ -26,11 +26,13 @@ export function App() {
     const getPosition = () => {
       clearInterval(id);
 
-      const response = {
-        "foo": { "latitude": 0.0 + Math.random(), "longitude": 0.0 },
-        "bar": { "latitude": 0.0 + Math.random(), "longitude": -1.0 }
-      };
-      setPositions(response);
+      const request = new Request(`/positions`, { method: "GET" });
+      fetch(request)
+        .then((response) => response.json())
+        .then((data) => {
+          setPositions(data);
+        })
+        .catch(console.error)
     };
 
     id = setInterval(getPosition, GET_POSITION_INTERVAL);
