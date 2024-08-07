@@ -13,12 +13,12 @@ async fn test_logout() {
         .send()
         .await
         .expect("Failed to send request");
-    let response_ok = client_cookie
+    let response_redirection = client_cookie
         .post(format!("https://{}/logout", ADDR))
         .send()
         .await
         .expect("Failed to send request");
-    assert!(response_ok.status().is_success());
+    assert!(response_redirection.status().is_redirection());
 
     let response_empty_header = client
         .post(format!("https://{}/logout", ADDR))

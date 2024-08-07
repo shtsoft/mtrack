@@ -60,7 +60,8 @@ pub async fn logout(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>
             Ok((delete_session_cookie, name)) => {
                 tracing::info!("User {} has logged out successfully", name);
                 Response::builder()
-                    .status(StatusCode::OK)
+                    .status(StatusCode::SEE_OTHER)
+                    .header(header::LOCATION, "/")
                     .header(header::SET_COOKIE, delete_session_cookie)
                     .body(Body::from("Log out succeeded."))
                     .expect("Impossible error when building response.")
