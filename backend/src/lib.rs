@@ -42,6 +42,7 @@ pub struct Args {
     pub key: String,
     pub upload_users: String,
     pub download_users: String,
+    pub dist: String,
 }
 
 /// Abstracts the configuration of the application.
@@ -56,6 +57,8 @@ pub struct Config {
     upload_users: Vec<UserEntry>,
     /// database of the users who can download uploaded positions
     download_users: Vec<UserEntry>,
+    /// path to the frontend distribution
+    dist: String,
 }
 
 impl Config {
@@ -89,12 +92,15 @@ impl Config {
         let download_users: Vec<UserEntry> =
             serde_json::from_str(&fs::read_to_string(args.download_users)?)?;
 
+        let dist = args.dist;
+
         Ok(Self {
             level,
             addr,
             server_config,
             upload_users,
             download_users,
+            dist,
         })
     }
 }
@@ -119,6 +125,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
         positions: HashMap::with_capacity(config.upload_users.len()),
         download_users: config.download_users,
         upload_users: config.upload_users,
+        dist: config.dist,
     }));
 
     let handle = task::spawn(

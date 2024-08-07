@@ -30,6 +30,9 @@ pub struct Args {
     /// Path to download users db the server uses
     #[arg(short, long)]
     download_users: String,
+    /// Path to the frontend distribution the server uses
+    #[arg(long)]
+    dist: String,
 }
 
 fn main() {
@@ -42,6 +45,7 @@ fn main() {
         key: args.key,
         upload_users: args.upload_users,
         download_users: args.download_users,
+        dist: args.dist,
     };
 
     let config = Config::new(args).unwrap_or_else(|err| {
