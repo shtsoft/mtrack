@@ -78,6 +78,13 @@ pub struct AppState {
     pub positions: HashMap<Name, Coordinates>,
     pub download_users: Vec<UserEntry>,
     pub upload_users: Vec<UserEntry>,
+    pub pages: HashMap<&'static str, String>,
+}
+
+#[derive(Clone)]
+/// Abstracts the state.
+pub struct State {
+    pub app_state: Arc<RwLock<AppState>>,
     pub dist: String,
 }
 
@@ -104,18 +111,18 @@ fn prune_sessions(state: &Arc<RwLock<AppState>>) {
 /// Defines the application.
 /// - `tls_socket` is the TLS connection the server runs on.
 /// - `state` is the application state.
-pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState>>) {
+pub async fn server(tls_socket: TlsStream<TcpStream>, state: State) {
     tracing::debug!("TcpStream from proxy to downstream: {:?}", tls_socket);
 
     tracing::info!("Start serving connection");
 
-    let state_clone = state.clone();
+    let state_clone = state.app_state.clone();
     thread::spawn(move || loop {
         thread::sleep(SESSION_TTL_UNIT);
         prune_sessions(&state_clone);
     });
 
-    let assets = state.read().expect("Poisoned lock.").dist.clone() + "/assets";
+    let assets = state.dist + "/assets";
     let app = Router::new()
         .route("/health_check", get(health_check))
         .route("/positions/:key", post(post_position))
@@ -131,7 +138,7 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
         .route("/tracker", get(tracker))
         .route("/tracker/index.html", get(tracker))
         .nest_service("/assets", ServeDir::new(assets))
-        .with_state(state);
+        .with_state(state.app_state);
 
     if let Err(err) = http1::Builder::new()
         .serve_connection(

@@ -11,8 +11,7 @@ pub mod app;
 pub mod utils;
 
 use app::server;
-use app::AppState;
-use app::UserEntry;
+use app::{AppState, State, UserEntry};
 
 use utils::{load_certs, load_key, serve, sigint_abort};
 
@@ -32,6 +31,9 @@ use tracing::{Instrument, Level};
 
 /// The name of the application.
 const NAME: &str = "mtrack";
+
+/// The names of the pages the application serves.
+const PAGE_NAMES: [&str; 3] = ["login", "postpos", "tracker"];
 
 /// Abstracts the command line parameters.
 pub struct Args {
@@ -112,6 +114,24 @@ impl Config {
 ///
 ///  An error is returned if there is a problem with the aborted server.
 pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    fn load_pages<'a>(
+        dist: &str,
+    ) -> Result<HashMap<&'a str, String>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut pages = HashMap::new();
+
+        pages.insert(
+            "home",
+            fs::read_to_string(dist.to_string() + "/index.html")?,
+        );
+
+        for name in PAGE_NAMES {
+            let page = fs::read_to_string(dist.to_string() + &format!("/{}/index.html", name))?;
+            pages.insert(name, page);
+        }
+
+        Ok(pages)
+    }
+
     let subscriber = tracing_subscriber::fmt()
         .with_file(true)
         .with_line_number(true)
@@ -120,19 +140,23 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
         .finish();
     let _ = subscriber::set_global_default(subscriber);
 
-    let state = Arc::new(RwLock::new(AppState {
+    let app_state = Arc::new(RwLock::new(AppState {
         sessions: HashMap::with_capacity(config.download_users.len()),
         positions: HashMap::with_capacity(config.upload_users.len()),
         download_users: config.download_users,
         upload_users: config.upload_users,
-        dist: config.dist,
+        pages: load_pages(&config.dist)?,
     }));
+    let state = State {
+        app_state: Arc::clone(&app_state),
+        dist: config.dist,
+    };
 
     let handle = task::spawn(
         serve(
             server,
             config.addr,
-            Arc::clone(&state),
+            state,
             TlsAcceptor::from(Arc::new(config.server_config)),
         )
         .instrument(tracing::error_span!(NAME)),
