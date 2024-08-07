@@ -12,10 +12,8 @@ async fn test_get_positions() {
     let (client, client_cookie) = make_clients();
 
     client_cookie
-        .post(format!(
-            "https://{}/login?name={}&password={}",
-            ADDR, NAMEFOO, PASSWORDFOO
-        ))
+        .post(format!("https://{}/login", ADDR))
+        .body(format!("name={}&password={}", NAMEFOO, PASSWORDFOO))
         .send()
         .await
         .expect("Failed to send request");

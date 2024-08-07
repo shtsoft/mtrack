@@ -8,10 +8,8 @@ async fn test_logout() {
     let (client, client_cookie) = make_clients();
 
     client_cookie
-        .post(format!(
-            "https://{}/login?name={}&password={}",
-            ADDR, NAMEBAR, PASSWORDBAR
-        ))
+        .post(format!("https://{}/login", ADDR))
+        .body(format!("name={}&password={}", NAMEBAR, PASSWORDBAR))
         .send()
         .await
         .expect("Failed to send request");

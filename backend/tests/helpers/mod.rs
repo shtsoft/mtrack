@@ -36,6 +36,7 @@ pub fn make_clients() -> (Client, Client) {
     let cert = Certificate::from_pem(&buf).expect("Failed to load root certificate");
     let client = ClientBuilder::new()
         .add_root_certificate(cert.clone())
+        .redirect(Policy::none())
         .build()
         .expect("Failed to build client");
     let client_cookie = ClientBuilder::new()
