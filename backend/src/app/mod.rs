@@ -123,9 +123,13 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: Arc<RwLock<AppState
         .route("/login", post(post_login))
         .route("/logout", post(logout))
         .route("/", get(home))
+        .route("/index.html", get(home))
         .route("/login", get(get_login))
+        .route("/login/index.html", get(get_login))
         .route("/postpos", get(postpos))
+        .route("/postpos/index.html", get(postpos))
         .route("/tracker", get(tracker))
+        .route("/tracker/index.html", get(tracker))
         .nest_service("/assets", ServeDir::new(assets))
         .with_state(state);
 
