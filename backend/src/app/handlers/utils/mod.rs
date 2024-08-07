@@ -1,8 +1,10 @@
 //! This module defines some utility functions to handle requests.
 
-use crate::app::{Name, SessionID};
-use crate::app::UserEntry;
 use crate::app::SESSION_ID_COOKIE_NAME;
+use crate::app::{AppState, UserEntry};
+use crate::app::{Name, SessionID};
+
+use std::sync::{Arc, RwLock};
 
 use axum::body::Body;
 use axum::http::StatusCode;
@@ -129,6 +131,26 @@ pub fn extract_session_id(headers: HeaderMap) -> Result<SessionID, Response> {
             .body(Body::from("The are no cookies."))
             .expect("Impossible error when building response.")),
     }
+}
+
+/// Checks if a client is already logged in and if so returns a redirection response to the tracker.
+/// - `headers` are the http headers.
+/// - `state` is the application state.
+pub fn check_for_login(headers: HeaderMap, state: Arc<RwLock<AppState>>) -> Option<Response> {
+    if let Ok(session_id) = extract_session_id(headers) {
+        let sessions = &state.read().expect("Poisoned lock.").sessions;
+        if sessions.contains_key(&session_id) {
+            tracing::info!("Client trying to log in while logged in");
+            return Some(
+                Response::builder()
+                    .status(StatusCode::SEE_OTHER)
+                    .header(header::LOCATION, "/tracker")
+                    .body(Body::from("You are already logged in."))
+                    .expect("Impossible error when building response."),
+            );
+        }
+    }
+    None
 }
 
 #[cfg(test)]

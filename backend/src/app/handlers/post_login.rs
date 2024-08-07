@@ -1,6 +1,6 @@
 //! This module defines the handler for logging in.
 
-use crate::app::handlers::utils::{extract_session_id, lookup_hash};
+use crate::app::handlers::utils::{check_for_login, lookup_hash};
 use crate::app::{AppState, SessionState};
 use crate::app::{SESSION_ID_COOKIE_NAME, SESSION_TTL};
 
@@ -64,16 +64,8 @@ pub async fn post_login(
     State(state): State<Arc<RwLock<AppState>>>,
     body: String,
 ) -> Response {
-    if let Ok(session_id) = extract_session_id(headers) {
-        let sessions = &state.read().expect("Poisoned lock.").sessions;
-        if sessions.contains_key(&session_id) {
-            tracing::info!("Client trying to log in while logged in");
-            return Response::builder()
-                .status(StatusCode::SEE_OTHER)
-                .header(header::LOCATION, "/tracker")
-                .body(Body::from("You are already logged in."))
-                .expect("Impossible error when building response.");
-        }
+    if let Some(response) = check_for_login(headers, state.clone()) {
+        return response;
     }
 
     let query: Query = match serde_qs::from_str(&body) {

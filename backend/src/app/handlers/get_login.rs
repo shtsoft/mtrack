@@ -1,6 +1,6 @@
 //! This module defines the handler for getting the login page.
 
-use crate::app::handlers::utils::extract_session_id;
+use crate::app::handlers::utils::check_for_login;
 use crate::app::AppState;
 
 use std::fs;
@@ -11,7 +11,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Response;
 
-use hyper::header;
 use hyper::header::HeaderMap;
 
 use tracing::instrument;
@@ -19,16 +18,8 @@ use tracing::instrument;
 /// Returns the login page.
 #[instrument(skip_all)]
 pub async fn get_login(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
-    if let Ok(session_id) = extract_session_id(headers) {
-        let sessions = &state.read().expect("Poisoned lock.").sessions;
-        if sessions.contains_key(&session_id) {
-            tracing::info!("Client trying to log in while logged in");
-            return Response::builder()
-                .status(StatusCode::SEE_OTHER)
-                .header(header::LOCATION, "/tracker")
-                .body(Body::from("You are already logged in."))
-                .expect("Impossible error when building response.");
-        }
+    if let Some(response) = check_for_login(headers, state.clone()) {
+        return response;
     }
 
     let state = &state.read().expect("Poisoned lock.");
