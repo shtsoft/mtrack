@@ -55,9 +55,9 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
 }
 
 /// Logs a user in if it is not already logged in.
-/// - `Query(query)` is the query from the URL.
 /// - `headers` are the http headers.
 /// - `State(state)` is the application state.
+/// - `body` is the http body of the request.
 #[instrument(skip_all)]
 pub async fn post_login(
     headers: HeaderMap,
