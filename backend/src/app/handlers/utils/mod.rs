@@ -160,6 +160,10 @@ pub fn check_for_login(headers: &HeaderMap, state: &Arc<RwLock<AppState>>) -> Op
 #[cfg(test)]
 mod tests {
     use super::*;
+    
+    use crate::app::SessionState;
+
+    use std::collections::HashMap;
 
     use hyper::header;
     use hyper::header::{HeaderMap, HeaderValue};
@@ -173,6 +177,8 @@ mod tests {
     const BAD_CHAR: &str = "ß";
     const BAD_COOKIE: &str = "foo=bar";
     const BAD_ID: &str = "sessionID=xyz";
+
+    const GOOD_ID_INT: u128 = 1234;
 
     #[test]
     fn test_lookup_name() {
@@ -226,5 +232,31 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.insert(header::COOKIE, BAD_ID.parse().unwrap());
         assert!(extract_session_id(&headers).is_err());
+    }
+
+    #[test]
+    fn test_check_for_login() {
+        let mut sessions = HashMap::new();
+        sessions.insert(
+            GOOD_ID_INT,
+            SessionState {
+                name: String::new(),
+                ttl: 0,
+            },
+        );
+        let app_state = Arc::new(RwLock::new(AppState {
+            sessions,
+            positions: HashMap::new(),
+            download_users: Vec::new(),
+            upload_users: Vec::new(),
+            pages: HashMap::new(),
+        }));
+
+        let mut headers = HeaderMap::new();
+        headers.insert(header::COOKIE, GOOD_ID.parse().unwrap());
+        assert!(check_for_login(&headers, &app_state).is_some());
+
+        let headers = HeaderMap::new();
+        assert!(check_for_login(&headers, &app_state).is_none());
     }
 }
