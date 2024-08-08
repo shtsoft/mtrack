@@ -55,7 +55,7 @@ fn delete_session_cookie(
 /// - `State(state)` is the application state.
 #[instrument(skip_all)]
 pub async fn logout(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
-    match extract_session_id(headers) {
+    match extract_session_id(&headers) {
         Ok(session_id) => match delete_session_cookie(session_id, &state) {
             Ok((delete_session_cookie, name)) => {
                 tracing::info!("User {} has logged out successfully", name);

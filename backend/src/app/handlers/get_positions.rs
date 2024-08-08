@@ -22,7 +22,7 @@ pub async fn get_positions(
     headers: HeaderMap,
     State(state): State<Arc<RwLock<AppState>>>,
 ) -> Response {
-    match extract_session_id(headers) {
+    match extract_session_id(&headers) {
         Ok(session_id) => {
             let state = &state.read().expect("Poisoned lock.");
             if state.sessions.contains_key(&session_id) {

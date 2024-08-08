@@ -17,7 +17,7 @@ use tracing::instrument;
 /// Returns the login page.
 #[instrument(skip_all)]
 pub async fn get_login(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
-    if let Some(response) = check_for_login(headers, state.clone()) {
+    if let Some(response) = check_for_login(&headers, &state) {
         return response;
     }
 

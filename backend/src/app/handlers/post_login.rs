@@ -64,7 +64,7 @@ pub async fn post_login(
     State(state): State<Arc<RwLock<AppState>>>,
     body: String,
 ) -> Response {
-    if let Some(response) = check_for_login(headers, state.clone()) {
+    if let Some(response) = check_for_login(&headers, &state) {
         return response;
     }
 

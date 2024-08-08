@@ -95,7 +95,7 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
 /// - parsing the cookie header fails.
 /// - there is no session ID cookie.
 /// - the session ID cookie is not an integer.
-pub fn extract_session_id(headers: HeaderMap) -> Result<SessionID, Response> {
+pub fn extract_session_id(headers: &HeaderMap) -> Result<SessionID, Response> {
     match headers.get(header::COOKIE) {
         Some(cookies_value) => match parse_cookies(cookies_value) {
             Ok(jar) => match jar.get(SESSION_ID_COOKIE_NAME) {
@@ -136,7 +136,7 @@ pub fn extract_session_id(headers: HeaderMap) -> Result<SessionID, Response> {
 /// Checks if a client is already logged in and if so returns a redirection response to the tracker.
 /// - `headers` are the http headers.
 /// - `state` is the application state.
-pub fn check_for_login(headers: HeaderMap, state: Arc<RwLock<AppState>>) -> Option<Response> {
+pub fn check_for_login(headers: &HeaderMap, state: &Arc<RwLock<AppState>>) -> Option<Response> {
     if let Ok(session_id) = extract_session_id(headers) {
         let sessions = &state.read().expect("Poisoned lock.").sessions;
         if sessions.contains_key(&session_id) {
@@ -206,21 +206,21 @@ mod tests {
     fn test_extract_session_id() {
         let mut headers = HeaderMap::new();
         headers.insert(header::COOKIE, GOOD_ID.parse().unwrap());
-        assert!(extract_session_id(headers).is_ok());
+        assert!(extract_session_id(&headers).is_ok());
 
         let headers = HeaderMap::new();
-        assert!(extract_session_id(headers).is_err());
+        assert!(extract_session_id(&headers).is_err());
 
         let mut headers = HeaderMap::new();
         headers.insert(header::COOKIE, BAD_CHAR.parse().unwrap());
-        assert!(extract_session_id(headers).is_err());
+        assert!(extract_session_id(&headers).is_err());
 
         let mut headers = HeaderMap::new();
         headers.insert(header::COOKIE, BAD_COOKIE.parse().unwrap());
-        assert!(extract_session_id(headers).is_err());
+        assert!(extract_session_id(&headers).is_err());
 
         let mut headers = HeaderMap::new();
         headers.insert(header::COOKIE, BAD_ID.parse().unwrap());
-        assert!(extract_session_id(headers).is_err());
+        assert!(extract_session_id(&headers).is_err());
     }
 }
