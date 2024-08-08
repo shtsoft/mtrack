@@ -56,6 +56,7 @@ export function TrackerMap({ positions }: TrackerMapParameters) {
     icon = L.icon({
       iconUrl: '/assets/app/images/marker-icon.svg',
       iconSize: [50, 50],
+      iconAnchor: [25, 49]
     });
   }, []);
 
