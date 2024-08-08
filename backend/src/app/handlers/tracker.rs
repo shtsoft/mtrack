@@ -12,6 +12,10 @@ use axum::response::Response;
 use tracing::instrument;
 
 /// Returns the tracker page.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 #[instrument(skip_all)]
 pub async fn tracker(State(state): State<Arc<RwLock<AppState>>>) -> Response {
     let pages = &state.read().expect("Poisoned lock.").pages;

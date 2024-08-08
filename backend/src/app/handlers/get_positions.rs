@@ -17,6 +17,10 @@ use tracing::instrument;
 /// Gets the positions after checking for a valid session.
 /// - `headers` are the http headers.
 /// - `State(state)` is the application state.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 #[instrument(skip_all)]
 pub async fn get_positions(
     headers: HeaderMap,

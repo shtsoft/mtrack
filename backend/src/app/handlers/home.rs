@@ -12,6 +12,10 @@ use axum::response::Response;
 use tracing::instrument;
 
 /// Returns the home page.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 #[instrument(skip_all)]
 pub async fn home(State(state): State<Arc<RwLock<AppState>>>) -> Response {
     let pages = &state.read().expect("Poisoned lock.").pages;

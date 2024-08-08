@@ -90,6 +90,10 @@ pub struct State {
 
 /// Prunes the application state from expired sessions.
 /// - `state` is the application state.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 fn prune_sessions(state: &Arc<RwLock<AppState>>) {
     let mut dead_sessions = Vec::new();
 

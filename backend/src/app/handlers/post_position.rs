@@ -16,6 +16,10 @@ use tracing::instrument;
 /// - `Path(path)` is the path of the URL.
 /// - `State(state)` is the application state.
 /// - `body` is the http body of the request.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 #[instrument(skip_all)]
 pub async fn post_position(
     Path(key): Path<String>,

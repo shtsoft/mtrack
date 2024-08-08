@@ -33,6 +33,10 @@ struct Query {
 /// Makes a session cookie for a newly logged in user.
 /// - `name` is the name of the user who is logging in.
 /// - `State(state)` is the application state.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
     let mut rng = rand::thread_rng();
     let session_id: u128 = rng.gen();
@@ -58,6 +62,10 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
 /// - `headers` are the http headers.
 /// - `State(state)` is the application state.
 /// - `body` is the http body of the request.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock` or if `make_session_cookie` panics.
 #[instrument(skip_all)]
 pub async fn post_login(
     headers: HeaderMap,

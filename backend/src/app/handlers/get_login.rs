@@ -15,6 +15,10 @@ use hyper::header::HeaderMap;
 use tracing::instrument;
 
 /// Returns the login page.
+///
+/// # Panics
+///
+/// A panic is caused if `check_for_login` panics.
 #[instrument(skip_all)]
 pub async fn get_login(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
     if let Some(response) = check_for_login(&headers, &state) {

@@ -24,6 +24,10 @@ use tracing::instrument;
 /// Removes a session and returns a cookie deleting the session ID cookie on the client.
 /// - `session_id` is the ID of the session which is to be removed.
 /// - `State(state)` is the application state.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 fn delete_session_cookie(
     session_id: SessionID,
     state: &Arc<RwLock<AppState>>,
@@ -53,6 +57,10 @@ fn delete_session_cookie(
 /// Logs a logged in user out.
 /// - `headers` are the http headers.
 /// - `State(state)` is the application state.
+///
+/// # Panics
+///
+/// A panic is caused if `delete_session_cookie` panics.
 #[instrument(skip_all)]
 pub async fn logout(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
     match extract_session_id(&headers) {

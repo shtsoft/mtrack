@@ -136,6 +136,10 @@ pub fn extract_session_id(headers: &HeaderMap) -> Result<SessionID, Response> {
 /// Checks if a client is already logged in and if so returns a redirection response to the tracker.
 /// - `headers` are the http headers.
 /// - `state` is the application state.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock`.
 pub fn check_for_login(headers: &HeaderMap, state: &Arc<RwLock<AppState>>) -> Option<Response> {
     if let Ok(session_id) = extract_session_id(headers) {
         let sessions = &state.read().expect("Poisoned lock.").sessions;
