@@ -166,8 +166,8 @@ img::selection {
   flex-direction: row;
 }
 
-.vh-10 {
-  height: 10vh;
+.min-vh-10 {
+  min-height: 10vh;
 }
 
 .vh-40 {

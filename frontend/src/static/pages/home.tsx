@@ -13,7 +13,7 @@ function CSS() {
 function Content() {
   return (
     <>
-      <div className="vh-10 dark">
+      <div className="min-vh-10 dark">
         <Nav />
       </div>
       <div id="layout" className="vh-90">
