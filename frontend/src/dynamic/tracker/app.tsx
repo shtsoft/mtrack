@@ -4,6 +4,7 @@
  * The idea is to fetch the positions from a remote server and have two subcomponents to visualize them as numbers and on a map, respectively.
  */
 
+import { Logout } from "./components/logout";
 import { TrackerMap } from "./components/tracker-map";
 import { TrackerNumbers } from "./components/tracker-numbers";
 
@@ -42,6 +43,7 @@ export function App() {
     <div className="app">
       <TrackerNumbers positions={positions} />
       <TrackerMap positions={positions} />
+      <Logout />
     </div>
   );
 }
