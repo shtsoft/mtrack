@@ -14,7 +14,7 @@ The entrypoints are
 ## Deployment
 
 To deploy mtrack, first clone the repo.
-Then follow then follow the respective installation and usage descriptions of the [backend](backend) and [frontend](frontend).
+Then follow the respective installation and usage descriptions of the [backend](backend) and [frontend](frontend).
 
 ## Contributing
 
