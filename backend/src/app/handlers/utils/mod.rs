@@ -160,7 +160,7 @@ pub fn check_for_login(headers: &HeaderMap, state: &Arc<RwLock<AppState>>) -> Op
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::app::SessionState;
 
     use std::collections::HashMap;
