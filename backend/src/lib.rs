@@ -1,10 +1,10 @@
-//! mtrack is a position tracking web app based on getting and posting positions via http requests.
+//! mtrack is a position tracking app based on getting and posting positions via http requests.
 //!
 //! ## Design
 //!
 //! The idea is that a predefined set of users can upload their current position with a post request.
 //! The uploaded positions can then be downloaded with a get request by another set of predefined users.
-//! Both uploading and downloading is password protected.
+//! Both uploading and downloading is password protected and a frontend is served to allow easy uploading and downloading.
 
 pub mod app;
 
@@ -112,7 +112,7 @@ impl Config {
 ///
 ///  # Errors
 ///
-///  An error is returned if there is a problem with the aborted server.
+///  An error is returned if loading the pages fails or if there is a problem with the aborted server.
 pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     fn load_pages<'a>(
         dist: &str,

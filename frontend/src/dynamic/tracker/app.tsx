@@ -1,7 +1,7 @@
 /**
- * The app allows to track positions as numbers as well as on a map.
+ * The tracker app allows to track positions as numbers as well as on a map.
  *
- * The idea is to fetch the positions from a remote server and have two subcomponents to visualize them as numbers and on a map, respectively.
+ * The idea is to fetch the positions from a server and have two subcomponents to visualize them as numbers and on a map, respectively.
  */
 
 import { Logout } from "./components/logout";
@@ -14,9 +14,9 @@ import { useEffect, useState } from "react";
 const GET_POSITION_INTERVAL = 1000;
 
 /**
- * Combines the `TrackerNumbers`-component with the `TrackerMap`-component.
+ * Combines the `TrackerNumbers`-component with the `TrackerMap`-component and the  `Logout`-component.
  *
- * As a side effect the function fetches positions from the server and makes them available to its subcomponents.
+ * As a side effect the function fetches positions from the server and makes them available to its tracker-subcomponents.
  */
 export function App() {
   const [positions, setPositions] = useState({});

@@ -65,7 +65,7 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock` or if `make_session_cookie` panics.
+/// A panic is caused if there is an issue with the `RwLock` or if `make_session_cookie` or `check_for_login` panics.
 #[instrument(skip_all)]
 pub async fn post_login(
     headers: HeaderMap,

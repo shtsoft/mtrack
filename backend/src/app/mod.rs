@@ -114,7 +114,7 @@ fn prune_sessions(state: &Arc<RwLock<AppState>>) {
 
 /// Defines the application.
 /// - `tls_socket` is the TLS connection the server runs on.
-/// - `state` is the application state.
+/// - `state` is the server state.
 pub async fn server(tls_socket: TlsStream<TcpStream>, state: State) {
     tracing::debug!("TcpStream from proxy to downstream: {:?}", tls_socket);
 
