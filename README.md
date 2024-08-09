@@ -1,10 +1,5 @@
 # mtrack
 
-[![CI][actions-badge]][actions-url]
-
-[actions-badge]: https://github.com/shtsoft/mtrack/actions/workflows/ci.yaml/badge.svg
-[actions-url]: https://github.com/shtsoft/mtrack/actions/workflows/ci.yaml
-
 A web app to let clients of class 'download' track positions of clients of class 'upload'.
 The entrypoints are
 
