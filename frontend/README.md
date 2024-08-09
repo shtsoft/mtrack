@@ -5,12 +5,7 @@
 [license-badge]: https://img.shields.io/badge/license-GPL-blue.svg
 [license-url]: ./package.json
 
-The **TypeScript** frontend of [mtrack](https://github.com/shtsoft/mtrack).
-
-- Typescript
-  * safety
-    + thoroughly tested
-    + ...
+The frontend of [mtrack](https://github.com/shtsoft/mtrack).
 
 ### Installation
 
@@ -36,8 +31,25 @@ user@host:~$ npm run serve
 
 ### Screenshots
 
-<-- A SCREENSHOT OF THE LANDING PAGE -->
-<-- SCREENSHOTS OF THE MAP -->
+#### Home Page
+
+> <img src="screenshots/home.png" alt="mtrack home page" />
+
+#### Login Page
+
+> <img src="screenshots/login.png" alt="mtrack login page" />
+
+#### Postpos Page
+
+> <img src="screenshots/postpos.png" alt="mtrack postpos page" />
+
+#### Tracker Page 1
+
+> <img src="screenshots/tracker-2.png" alt="mtrack tracker page 1" />
+
+#### Tracker Page 2
+
+> <img src="screenshots/tracker-1.png" alt="mtrack tracker page 2" />
 
 ## Contributing
 

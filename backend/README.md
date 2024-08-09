@@ -5,13 +5,7 @@
 [license-badge]: https://img.shields.io/badge/license-GPL-blue.svg
 [license-url]: ./Cargo.toml
 
-The **Rust** backend of [mtrack](https://github.com/shtsoft/mtrack).
-
-- Rust:
-  * safety:
-    + thoroughly testet
-    + memory-safety: no `unsafe`-code
-    + ...
+The backend of [mtrack](https://github.com/shtsoft/mtrack).
 
 ### Installation
 
@@ -31,6 +25,8 @@ To get a usage description just run the app with the 'help'-argument:
 ```console
 user@host:~$ mtrack --help
 ```
+
+(Also have a look at the [data directory](data) to see what is needed to run mtrack. In particular, note that the PHC strings in the user databases are bcrypt.)
 
 ## Contributing
 
