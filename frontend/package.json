@@ -1,7 +1,7 @@
 {
   "name": "mtrack",
   "version": "0.1.0",
-  "description": "",
+  "description": "A position tracking app.",
   "repository": "https://github.com/shtsoft/mtrack",
   "license": "GPL-3.0-or-later",
   "keywords": [],

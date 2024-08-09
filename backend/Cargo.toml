@@ -2,7 +2,7 @@
 name = "mtrack"
 version = "0.1.0"
 edition = "2021"
-description = ""
+description = "A position tracking app."
 documentation = ""
 readme = "README.md"
 repository = "https://github.com/shtsoft/mtrack"
