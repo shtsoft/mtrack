@@ -1,7 +1,7 @@
 mod helpers;
 
-use helpers::{make_clients, make_config};
 use helpers::ADDR;
+use helpers::{make_clients, make_config};
 
 #[tokio::test]
 async fn test_get_login() {
