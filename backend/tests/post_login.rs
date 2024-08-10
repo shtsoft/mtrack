@@ -1,12 +1,20 @@
 mod helpers;
 
-use helpers::make_clients;
+use helpers::{make_clients, make_config};
 use helpers::{ADDR, NAMEFOO, PASSWORDBAD, PASSWORDFOO};
 
 const NAMEBAD: &str = "F";
 
 #[tokio::test]
 async fn test_post_login() {
+    std::thread::spawn(|| {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let _ = rt.block_on(mtrack::run(make_config()));
+    });
+
     let (client, client_cookie) = make_clients();
 
     let response_redirection_1 = client

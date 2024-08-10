@@ -1,5 +1,9 @@
 use std::io::Read;
 
+use mtrack::{Args, Config};
+
+use std::net::Ipv4Addr;
+
 use reqwest::redirect::Policy;
 use reqwest::{Certificate, Client, ClientBuilder};
 
@@ -47,4 +51,19 @@ pub fn make_clients() -> (Client, Client) {
         .expect("Failed to build client");
 
     (client, client_cookie)
+}
+
+pub fn make_config() -> Config {
+    let args = Args {
+        verbose: false,
+        ip: Ipv4Addr::new(127, 0, 0, 1),
+        port: 10443,
+        cert: "data/example.pem".to_string(),
+        key: "data/example.key".to_string(),
+        upload_users: "data/upload_users.json".to_string(),
+        download_users: "data/download_users.json".to_string(),
+        dist: "../frontend/dist".to_string(),
+    };
+
+    Config::new(args).unwrap()
 }

@@ -1,10 +1,18 @@
 mod helpers;
 
-use helpers::make_clients;
 use helpers::ADDR;
+use helpers::{make_clients, make_config};
 
 #[tokio::test]
 async fn test_tracker() {
+    std::thread::spawn(|| {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let _ = rt.block_on(mtrack::run(make_config()));
+    });
+
     let (client, _) = make_clients();
 
     let response_ok_1 = client
