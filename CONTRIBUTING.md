@@ -21,6 +21,26 @@ GitHub Issues is how contributors shall communicate.
 Issue-templates are provided to type communication a bit.
 But in doubt, feel free to use blank issues.
 
+### Workflows
+
+When making a contribution keep an eye on the [workflows](.github/workflows).
+
+In a nutshell, what they do is
+
+- Audit-Backend
+  * checking for known bugs in dependencies
+- Audit-Frontend
+  * checking for known bugs in dependencies
+- CI-Backend
+  * checking if tests run
+  * checking for memory leak
+  * checking format
+  * checking for lints
+  * checking documentation
+- CI-Frontend
+  * checking if tests run
+  * checking for lints
+
 ### Pull Requests
 
 As usual, if you can not directly push to the repository use pull requests for contributions.

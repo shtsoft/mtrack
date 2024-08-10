@@ -1,0 +1,23 @@
+name: Audit-Frontend
+
+on:
+  push:
+    paths:
+      - '**/package-lock.json'
+      - '**/package.json'
+  schedule:
+    - cron: '0 2 * * 1'
+
+jobs:
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: current
+      - run: npm install

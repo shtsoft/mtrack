@@ -1,0 +1,21 @@
+name: Audit-Backend
+
+on:
+  push:
+    paths:
+      - '**/Cargo.lock'
+      - '**/Cargo.toml'
+  schedule:
+    - cron: '0 2 * * 1'
+
+jobs:
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./backend
