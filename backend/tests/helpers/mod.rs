@@ -29,7 +29,7 @@ pub const BAD_ID_1: &str = "sessionID=xyz";
 #[allow(dead_code)]
 pub const BAD_ID_2: &str = "sessionID=1234";
 
-const ROOT_CERT: &str = "data/root.crt";
+const ROOT_CERT: &str = "tests-data/root.crt";
 
 pub fn make_clients() -> (Client, Client) {
     let mut buf = Vec::new();
@@ -58,11 +58,11 @@ pub fn make_config() -> Config {
         verbose: false,
         ip: Ipv4Addr::new(127, 0, 0, 1),
         port: 10443,
-        cert: "data/example.pem".to_string(),
-        key: "data/example.key".to_string(),
-        upload_users: "data/upload_users.json".to_string(),
-        download_users: "data/download_users.json".to_string(),
-        dist: "../frontend/dist".to_string(),
+        cert: "tests-data/example.pem".to_string(),
+        key: "tests-data/example.key".to_string(),
+        upload_users: "tests-data/upload_users.json".to_string(),
+        download_users: "tests-data/download_users.json".to_string(),
+        dist: "../frontend/public".to_string(),
     };
 
     Config::new(args).unwrap()
