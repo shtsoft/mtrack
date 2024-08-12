@@ -11,7 +11,7 @@ async fn test_post_position() {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
-            .unwrap();
+            .expect("Setting up tokio runtime failed");
         let _ = rt.block_on(mtrack::run(make_config()));
     });
 
