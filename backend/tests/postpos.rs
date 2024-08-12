@@ -3,9 +3,11 @@ mod helpers;
 use helpers::ADDR;
 use helpers::{make_clients, make_config};
 
+use std::thread;
+
 #[tokio::test]
 async fn test_postpos() {
-    std::thread::spawn(|| {
+    thread::spawn(|| {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()

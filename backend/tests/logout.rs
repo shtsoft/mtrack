@@ -3,9 +3,11 @@ mod helpers;
 use helpers::{make_clients, make_config};
 use helpers::{ADDR, BAD_CHAR, BAD_COOKIE, BAD_ID_1, BAD_ID_2, NAMEBAR, PASSWORDBAR};
 
+use std::thread;
+
 #[tokio::test]
 async fn test_logout() {
-    std::thread::spawn(|| {
+    thread::spawn(|| {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()

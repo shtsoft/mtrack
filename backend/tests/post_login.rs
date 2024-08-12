@@ -3,11 +3,13 @@ mod helpers;
 use helpers::{make_clients, make_config};
 use helpers::{ADDR, NAMEFOO, PASSWORDBAD, PASSWORDFOO};
 
+use std::thread;
+
 const NAMEBAD: &str = "F";
 
 #[tokio::test]
 async fn test_post_login() {
-    std::thread::spawn(|| {
+    thread::spawn(|| {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()

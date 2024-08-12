@@ -5,11 +5,13 @@ use helpers::{
     ADDR, BAD_CHAR, BAD_COOKIE, BAD_ID_1, BAD_ID_2, COORDINATES, NAMEFOO, PASSWORDBAR, PASSWORDFOO,
 };
 
+use std::thread;
+
 use hyper::header;
 
 #[tokio::test]
 async fn test_get_positions() {
-    std::thread::spawn(|| {
+    thread::spawn(|| {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()

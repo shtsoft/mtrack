@@ -3,11 +3,13 @@ mod helpers;
 use helpers::{make_clients, make_config};
 use helpers::{ADDR, COORDINATES, PASSWORDBAD, PASSWORDBAR};
 
+use std::thread;
+
 const BODYBAD: &str = "a";
 
 #[tokio::test]
 async fn test_post_position() {
-    std::thread::spawn(|| {
+    thread::spawn(|| {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()

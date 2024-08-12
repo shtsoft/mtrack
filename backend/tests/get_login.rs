@@ -3,13 +3,15 @@ mod helpers;
 use helpers::ADDR;
 use helpers::{make_clients, make_config};
 
+use std::thread;
+
 #[tokio::test]
 async fn test_get_login() {
-    std::thread::spawn(|| {
+    thread::spawn(|| {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
-            .unwrap();
+            .expect("Setting up tokio runtime failed");
         let _ = rt.block_on(mtrack::run(make_config()));
     });
 
