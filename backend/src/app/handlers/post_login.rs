@@ -110,7 +110,8 @@ pub async fn post_login(
                 } else {
                     tracing::warn!("User {} trying to log in with invalid password", name);
                     Response::builder()
-                        .status(StatusCode::BAD_REQUEST)
+                        .status(StatusCode::SEE_OTHER)
+                        .header(header::LOCATION, "/login")
                         .body(Body::from("You must have valid login data."))
                         .expect("Impossible error when building response.")
                 }
@@ -126,7 +127,8 @@ pub async fn post_login(
     } else {
         tracing::warn!("Client trying to log in with invalid user name");
         Response::builder()
-            .status(StatusCode::BAD_REQUEST)
+            .status(StatusCode::SEE_OTHER)
+            .header(header::LOCATION, "/login")
             .body(Body::from("You must have valid login data."))
             .expect("Impossible error when building response.")
     }

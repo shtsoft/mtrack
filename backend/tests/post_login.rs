@@ -47,7 +47,7 @@ async fn test_post_login() {
         .send()
         .await
         .expect("Failed to send request");
-    assert!(response_bad_name.status().is_client_error());
+    assert!(response_bad_name.status().is_redirection());
 
     let response_bad_password = client
         .post(format!("https://{}/login", ADDR))
@@ -55,5 +55,5 @@ async fn test_post_login() {
         .send()
         .await
         .expect("Failed to send request");
-    assert!(response_bad_password.status().is_client_error());
+    assert!(response_bad_password.status().is_redirection());
 }
