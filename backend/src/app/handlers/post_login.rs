@@ -58,6 +58,59 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
         .to_string()
 }
 
+/// Logs a user in.
+/// - `name` is the name of the user who is logging in.
+/// - `password` is the password of the user who is logging in.
+/// - `state` is the application state.
+///
+/// # Panics
+///
+/// A panic is caused if there is an issue with the `RwLock` or if `make_session_cookie` panics.
+async fn login(name: &str, password: String, state: Arc<RwLock<AppState>>) -> Response {
+    // The following indirection is here to prevent a deadlock arising from the lifetime of the
+    // guard.
+    let lookup = lookup_hash(name, &state.read().expect("Poisoned lock.").download_users);
+    if let Some(hash) = lookup {
+        let result = task::spawn_blocking(move || bcrypt::verify(password, &hash))
+            .await
+            .expect("Impossible error when verifying password.");
+        match result {
+            Ok(true) => {
+                let session_cookie = make_session_cookie(name, &state);
+                tracing::info!("User {} has logged in successfully", name);
+                Response::builder()
+                    .status(StatusCode::SEE_OTHER)
+                    .header(header::LOCATION, "/tracker")
+                    .header(header::SET_COOKIE, session_cookie)
+                    .body(Body::from("Log in succeeded."))
+                    .expect("Impossible error when building response.")
+            }
+            Ok(false) => {
+                tracing::warn!("User {} trying to log in with invalid password", name);
+                Response::builder()
+                    .status(StatusCode::SEE_OTHER)
+                    .header(header::LOCATION, "/login")
+                    .body(Body::from("You must have valid login data."))
+                    .expect("Impossible error when building response.")
+            }
+            Err(err) => {
+                tracing::error!("Failed to verify password of user {}: {:?}", name, err);
+                Response::builder()
+                    .status(StatusCode::INTERNAL_SERVER_ERROR)
+                    .body(Body::from("Failed to validate login data."))
+                    .expect("Impossible error when building response.")
+            }
+        }
+    } else {
+        tracing::warn!("Client trying to log in with invalid user name");
+        Response::builder()
+            .status(StatusCode::SEE_OTHER)
+            .header(header::LOCATION, "/login")
+            .body(Body::from("You must have valid login data."))
+            .expect("Impossible error when building response.")
+    }
+}
+
 /// Logs a user in if it is not already logged in.
 /// - `headers` are the http headers.
 /// - `State(state)` is the application state.
@@ -65,7 +118,7 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock` or if `make_session_cookie` or `check_for_login` panics.
+/// A panic is caused if `check_for_login` or `login` panics.
 #[instrument(skip_all)]
 pub async fn post_login(
     headers: HeaderMap,
@@ -86,50 +139,6 @@ pub async fn post_login(
                 .expect("Impossible error when building response.");
         }
     };
-    let name = &query.name;
-    let password = query.password;
 
-    // The following indirection is here to prevent a deadlock arising from the lifetime of the
-    // guard.
-    let lookup = lookup_hash(name, &state.read().expect("Poisoned lock.").download_users);
-    if let Some(hash) = lookup {
-        let result = task::spawn_blocking(move || bcrypt::verify(password, &hash))
-            .await
-            .expect("Impossible error when verifying password.");
-        match result {
-            Ok(verified) => {
-                if verified {
-                    let session_cookie = make_session_cookie(name, &state);
-                    tracing::info!("User {} has logged in successfully", name);
-                    Response::builder()
-                        .status(StatusCode::SEE_OTHER)
-                        .header(header::LOCATION, "/tracker")
-                        .header(header::SET_COOKIE, session_cookie)
-                        .body(Body::from("Log in succeeded."))
-                        .expect("Impossible error when building response.")
-                } else {
-                    tracing::warn!("User {} trying to log in with invalid password", name);
-                    Response::builder()
-                        .status(StatusCode::SEE_OTHER)
-                        .header(header::LOCATION, "/login")
-                        .body(Body::from("You must have valid login data."))
-                        .expect("Impossible error when building response.")
-                }
-            }
-            Err(err) => {
-                tracing::error!("Failed to verify password of user {}: {:?}", name, err);
-                Response::builder()
-                    .status(StatusCode::INTERNAL_SERVER_ERROR)
-                    .body(Body::from("Failed to validate login data."))
-                    .expect("Impossible error when building response.")
-            }
-        }
-    } else {
-        tracing::warn!("Client trying to log in with invalid user name");
-        Response::builder()
-            .status(StatusCode::SEE_OTHER)
-            .header(header::LOCATION, "/login")
-            .body(Body::from("You must have valid login data."))
-            .expect("Impossible error when building response.")
-    }
+    login(&query.name, query.password, state).await
 }
