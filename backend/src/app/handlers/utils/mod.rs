@@ -128,7 +128,10 @@ pub fn extract_session_id(headers: &HeaderMap) -> Result<SessionID, Response> {
         },
         None => Err(Response::builder()
             .status(StatusCode::BAD_REQUEST)
-            .body(Body::from("The are no cookies."))
+            .body(Body::from(format!(
+                "The are no cookies and in particular no '{}'-cookie.",
+                SESSION_ID_COOKIE_NAME
+            )))
             .expect("Impossible error when building response.")),
     }
 }
