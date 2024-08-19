@@ -49,7 +49,7 @@ pub async fn post_position(
                 tracing::warn!("Client posting invalid coordinates: {:?}", err);
                 (
                     StatusCode::BAD_REQUEST,
-                    "Coordinates must be numbers.".to_string(),
+                    "Coordinates must be a pair of floats.".to_string(),
                 )
             }
         }
