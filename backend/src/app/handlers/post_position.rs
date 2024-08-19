@@ -34,7 +34,7 @@ pub async fn post_position(
         )
     })
     .await
-    .expect("Impossible error when looking up name.");
+    .expect("Poisened lock.");
     if let Some(name) = result {
         match serde_json::from_str::<Coordinates>(&body) {
             Ok(coordinates) => {
