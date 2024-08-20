@@ -25,6 +25,10 @@ use tracing::instrument;
 /// - `session_id` is the ID of the session which is to be removed.
 /// - `State(state)` is the application state.
 ///
+/// # Errors
+///
+/// An error is returned if the session does not exist.
+///
 /// # Panics
 ///
 /// A panic is caused if there is an issue with the `RwLock`.
