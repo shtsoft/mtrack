@@ -26,7 +26,7 @@ To get a usage description just run the app with the 'help'-argument:
 user@host:~$ mtrack --help
 ```
 
-(Also have a look at the [data directory](data) to see what is needed to run mtrack. In particular, note that the PHC strings in the user databases are bcrypt.)
+(Also have a look at the [tests-data directory](tests-data) to see what is needed to run mtrack. In particular, note that the PHC strings in the user databases are bcrypt.)
 
 ## Contributing
 
