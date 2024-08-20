@@ -24,13 +24,14 @@ use tokio::task;
 
 use tracing::instrument;
 
+/// Abstracts the query.
 #[derive(Deserialize)]
 struct Query {
     name: String,
     password: String,
 }
 
-/// Makes a session cookie for a newly logged in user.
+/// Makes a session and returns a session ID cookie for the newly logged in user.
 /// - `name` is the name of the user who is logging in.
 /// - `State(state)` is the application state.
 ///

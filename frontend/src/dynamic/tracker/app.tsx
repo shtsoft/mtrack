@@ -1,6 +1,8 @@
 /**
  * The tracker app allows to track positions as numbers as well as on a map.
  *
+ * ## Design
+ *
  * The idea is to fetch the positions from a server and have two subcomponents to visualize them as numbers and on a map, respectively.
  */
 

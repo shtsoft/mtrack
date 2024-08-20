@@ -32,7 +32,7 @@ use tracing::{Instrument, Level};
 /// The name of the application.
 const NAME: &str = "mtrack";
 
-/// The names of the pages the application serves.
+/// The names of the pages the application serves (except for "home").
 const PAGE_NAMES: [&str; 3] = ["login", "postpos", "tracker"];
 
 /// Abstracts the command line parameters.

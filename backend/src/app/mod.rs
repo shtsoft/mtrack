@@ -81,8 +81,8 @@ pub struct AppState {
     pub pages: HashMap<&'static str, String>,
 }
 
-#[derive(Clone)]
 /// Abstracts the state.
+#[derive(Clone)]
 pub struct State {
     pub app_state: Arc<RwLock<AppState>>,
     pub dist: String,
