@@ -96,19 +96,18 @@ pub struct State {
 /// A panic is caused if there is an issue with the `RwLock`.
 fn prune_sessions(state: &Arc<RwLock<AppState>>) {
     let mut dead_sessions = Vec::new();
+    let mut lock = state.write().expect("Poisoned lock.");
 
-    let sessions = &mut state.write().expect("Poisoned lock.").sessions;
-    for (session, state) in sessions {
+    for (session, state) in &mut lock.sessions {
         if state.ttl > 0 {
             state.ttl -= 1;
         } else {
-            dead_sessions.push(session);
+            dead_sessions.push(*session);
         }
     }
 
-    let sessions = &mut state.write().expect("Poisoned lock.").sessions;
     for session in dead_sessions {
-        sessions.remove(session);
+        lock.sessions.remove(&session);
     }
 }
 
