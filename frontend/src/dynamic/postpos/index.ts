@@ -68,3 +68,6 @@ keyForm.addEventListener("submit", (event) => {
     );
   }
 });
+
+navigator.wakeLock.request("screen")
+  .catch((error) => { console.error(`${error}`) })
