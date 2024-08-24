@@ -15,7 +15,6 @@ use handlers::tracker::tracker;
 
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use std::thread;
 use std::time::Duration;
 
 use axum::extract::Request;
@@ -41,7 +40,7 @@ use tower_http::services::ServeDir;
 /// The number of time units a new session is alive.
 pub const SESSION_TTL: u8 = 24;
 /// The length of a session time unit in seconds.
-const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
+pub const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 
 /// The name of the session ID cookie.
 pub const SESSION_ID_COOKIE_NAME: &str = "sessionID";
@@ -61,8 +60,8 @@ pub struct Coordinates {
 
 /// Abstracts session state.
 pub struct SessionState {
-    name: Name,
-    ttl: u8,
+    pub name: Name,
+    pub ttl: u8,
 }
 
 /// Abstracts entries in the user databases.
@@ -88,29 +87,6 @@ pub struct State {
     pub dist: String,
 }
 
-/// Prunes the application state from expired sessions.
-/// - `state` is the application state.
-///
-/// # Panics
-///
-/// A panic is caused if there is an issue with the `RwLock`.
-fn prune_sessions(state: &Arc<RwLock<AppState>>) {
-    let mut dead_sessions = Vec::new();
-    let mut lock = state.write().expect("Poisoned lock.");
-
-    for (session, state) in &mut lock.sessions {
-        if state.ttl > 0 {
-            state.ttl -= 1;
-        } else {
-            dead_sessions.push(*session);
-        }
-    }
-
-    for session in dead_sessions {
-        lock.sessions.remove(&session);
-    }
-}
-
 /// Defines the application.
 /// - `tls_socket` is the TLS connection the server runs on.
 /// - `state` is the server state.
@@ -118,12 +94,6 @@ pub async fn server(tls_socket: TlsStream<TcpStream>, state: State) {
     tracing::debug!("TcpStream from proxy to downstream: {:?}", tls_socket);
 
     tracing::info!("Start serving connection");
-
-    let state_clone = state.app_state.clone();
-    thread::spawn(move || loop {
-        thread::sleep(SESSION_TTL_UNIT);
-        prune_sessions(&state_clone);
-    });
 
     let assets = state.dist + "/assets";
     let app = Router::new()

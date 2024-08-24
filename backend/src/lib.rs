@@ -11,6 +11,7 @@ pub mod app;
 pub mod utils;
 
 use app::server;
+use app::SESSION_TTL_UNIT;
 use app::{AppState, State, UserEntry};
 
 use utils::{load_certs, load_key, serve, sigint_abort};
@@ -20,6 +21,7 @@ use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV6};
 use std::sync::Arc;
 use std::sync::RwLock;
+use std::thread;
 
 use tokio::task;
 
@@ -132,6 +134,24 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
         Ok(pages)
     }
 
+    fn prune_sessions(state: &Arc<RwLock<AppState>>) {
+        let mut dead_sessions = Vec::new();
+
+        let mut lock = state.write().expect("Poisoned lock.");
+
+        for (session, state) in &mut lock.sessions {
+            if state.ttl > 0 {
+                state.ttl -= 1;
+            } else {
+                dead_sessions.push(*session);
+            }
+        }
+
+        for session in dead_sessions {
+            lock.sessions.remove(&session);
+        }
+    }
+
     let subscriber = tracing_subscriber::fmt()
         .with_file(true)
         .with_line_number(true)
@@ -151,6 +171,11 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
         app_state: Arc::clone(&app_state),
         dist: config.dist,
     };
+
+    thread::spawn(move || loop {
+        thread::sleep(SESSION_TTL_UNIT);
+        prune_sessions(&app_state);
+    });
 
     let handle = task::spawn(
         serve(
