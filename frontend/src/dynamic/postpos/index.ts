@@ -59,7 +59,12 @@ keyForm.addEventListener("submit", (event) => {
     geoStatus.textContent = "Locating ...";
     navigator.geolocation.watchPosition(
       (position) => geoSuccess(geoStatus, keyInput.value, position),
-      () => geoError(geoStatus)
+      () => geoError(geoStatus),
+      {
+        timeout: 0,
+        enableHighAccuracy: true,
+        maximumAge: 0
+      }
     );
   }
 });
