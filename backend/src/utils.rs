@@ -16,12 +16,17 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::signal;
 use tokio::task;
 use tokio::task::JoinHandle;
+use tokio::time;
+use tokio::time::Duration;
 
 use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use tokio_rustls::server::TlsStream;
 use tokio_rustls::TlsAcceptor;
 
 use tracing::{Instrument, Span};
+
+/// The time a connection is allowed to upgrade to TLS.
+const TLS_TIMEOUT: Duration = Duration::from_millis(500);
 
 /// Loads TLS certificates from a file.
 /// - `filename` is the file containing the certificates.
@@ -89,18 +94,36 @@ where
         let (socket, addr) = listener.accept().await?;
         tracing::info!("Accepted connection from {}", addr);
 
-        let tls_socket = match acceptor.accept(socket).await {
-            Ok(tls_socket) => tls_socket,
-            Err(err) => {
-                tracing::error!("Failed to add TLS for connection from {}: {:?}", addr, err);
-                continue;
-            }
-        };
-        tracing::info!("Added TLS for connection from {}", addr);
+        let tls_stream = acceptor.accept(socket);
+        let timer = time::sleep(TLS_TIMEOUT);
+        futures::pin_mut!(tls_stream);
+        futures::pin_mut!(timer);
+        match future::select(tls_stream, timer).await {
+            future::Either::Left((result, _)) => {
+                match result {
+                    Ok(tls_socket) => {
+                        tracing::info!("Added TLS for connection from {}", addr);
 
-        let span = tracing::error_span!("service", "connection-id" = id, "client-address" = %addr);
-        span.follows_from(Span::current());
-        task::spawn(server(tls_socket, state.clone()).instrument(span));
+                        let span = tracing::error_span!(
+                            "service",
+                            "connection-id" = id,
+                            "client-address" = %addr,
+                        );
+                        span.follows_from(Span::current());
+                        task::spawn(server(tls_socket, state.clone()).instrument(span));
+                    }
+                    Err(err) => {
+                        tracing::error!(
+                            "Failed to add TLS for connection from {}: {:?}",
+                            addr,
+                            err
+                        );
+                        continue;
+                    }
+                };
+            }
+            future::Either::Right((_, _)) => continue,
+        }
 
         id += 1;
     }
