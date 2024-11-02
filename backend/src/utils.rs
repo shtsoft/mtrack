@@ -26,7 +26,7 @@ use tokio_rustls::TlsAcceptor;
 use tracing::{Instrument, Span};
 
 /// The time a connection is allowed to upgrade to TLS.
-const TLS_TIMEOUT: Duration = Duration::from_millis(500);
+const TLS_TIMEOUT: Duration = Duration::from_millis(5000);
 
 /// Loads TLS certificates from a file.
 /// - `filename` is the file containing the certificates.
@@ -76,14 +76,14 @@ pub fn load_key(filename: &str) -> std::io::Result<PrivateKeyDer<'static>> {
 /// # Notes
 ///
 /// This function only returns in the error case.
-pub async fn serve<S, F, State: Clone + Send>(
+pub async fn serve<S, F, State: Clone + Send + 'static>(
     server: S,
     addr: SocketAddr,
     state: State,
     acceptor: TlsAcceptor,
 ) -> tokio::io::Result<()>
 where
-    S: Fn(TlsStream<TcpStream>, State) -> F + Send,
+    S: Fn(TlsStream<TcpStream>, State) -> F + Clone + Send + 'static,
     F: Future<Output = ()> + Send + 'static,
 {
     let listener = TcpListener::bind(&addr).await?;
@@ -91,39 +91,46 @@ where
 
     let mut id: u64 = 0;
     loop {
+        let server = server.clone();
+        let state = state.clone();
+
         let (socket, addr) = listener.accept().await?;
         tracing::info!("Accepted connection from {}", addr);
 
         let tls_stream = acceptor.accept(socket);
         let timer = time::sleep(TLS_TIMEOUT);
-        futures::pin_mut!(tls_stream);
-        futures::pin_mut!(timer);
-        match future::select(tls_stream, timer).await {
-            future::Either::Left((result, _)) => {
-                match result {
-                    Ok(tls_socket) => {
-                        tracing::info!("Added TLS for connection from {}", addr);
 
-                        let span = tracing::error_span!(
-                            "service",
-                            "connection-id" = id,
-                            "client-address" = %addr,
-                        );
-                        span.follows_from(Span::current());
-                        task::spawn(server(tls_socket, state.clone()).instrument(span));
-                    }
-                    Err(err) => {
-                        tracing::error!(
-                            "Failed to add TLS for connection from {}: {:?}",
-                            addr,
-                            err
-                        );
-                        continue;
-                    }
-                };
+        task::spawn(async move {
+            futures::pin_mut!(tls_stream);
+            futures::pin_mut!(timer);
+            match future::select(tls_stream, timer).await {
+                future::Either::Left((result, _)) => {
+                    match result {
+                        Ok(tls_socket) => {
+                            tracing::info!("Added TLS for connection from {}", addr);
+
+                            let span = tracing::error_span!(
+                                "service",
+                                "connection-id" = id,
+                                "client-address" = %addr,
+                            );
+                            span.follows_from(Span::current());
+                            server(tls_socket, state).instrument(span).await;
+                        }
+                        Err(err) => {
+                            tracing::error!(
+                                "Failed to add TLS for connection from {}: {:?}",
+                                addr,
+                                err
+                            );
+                        }
+                    };
+                }
+                future::Either::Right(_) => {
+                    tracing::warn!("Negotiating TLS for connection from {} timed out", addr);
+                }
             }
-            future::Either::Right((_, _)) => continue,
-        }
+        });
 
         id += 1;
     }
