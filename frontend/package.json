@@ -6,7 +6,7 @@
   "license": "GPL-3.0-or-later",
   "keywords": [],
   "engines": {
-    "node": ">=22.4.0 <23",
+    "node": ">=23.1.0 <24",
     "npm": ">=10.2.4 <11"
   },
   "dependencies": {
