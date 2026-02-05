@@ -1,14 +1,10 @@
 //! This module defines some utility functions to run a server with TLS.
 
 use std::fmt::Debug;
-use std::fs::File;
 use std::future::Future;
-use std::io::BufReader;
 use std::net::SocketAddr;
 
 use futures::future;
-
-use rustls_pemfile::Item;
 
 use thiserror::Error;
 
@@ -19,6 +15,8 @@ use tokio::task::JoinHandle;
 use tokio::time;
 use tokio::time::Duration;
 
+use tokio_rustls::rustls::pki_types::pem;
+use tokio_rustls::rustls::pki_types::pem::PemObject;
 use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use tokio_rustls::server::TlsStream;
 use tokio_rustls::TlsAcceptor;
@@ -34,9 +32,17 @@ const TLS_TIMEOUT: Duration = Duration::from_millis(5000);
 /// # Errors
 ///
 /// An error is returned if opening the file fails.
-pub fn load_certs(filename: &str) -> std::io::Result<Vec<CertificateDer<'static>>> {
-    let mut reader = BufReader::new(File::open(filename)?);
-    rustls_pemfile::certs(&mut reader).collect()
+pub fn load_certs(
+    filename: &str,
+) -> Result<Vec<CertificateDer<'static>>, Box<dyn std::error::Error>> {
+    let mut certs = Vec::new();
+    for result in CertificateDer::pem_file_iter(filename)? {
+        match result {
+            Ok(cert) => certs.push(cert),
+            Err(err) => return Err(Box::new(err)),
+        }
+    }
+    Ok(certs)
 }
 
 /// Loads a TLS key from a file.
@@ -45,22 +51,8 @@ pub fn load_certs(filename: &str) -> std::io::Result<Vec<CertificateDer<'static>
 /// # Errors
 ///
 /// An error is returned if opening the file fails or if reading from the file fails.
-pub fn load_key(filename: &str) -> std::io::Result<PrivateKeyDer<'static>> {
-    let mut reader = BufReader::new(File::open(filename)?);
-    loop {
-        match rustls_pemfile::read_one(&mut reader)? {
-            Some(Item::Pkcs1Key(key)) => return Ok(key.into()),
-            Some(Item::Pkcs8Key(key)) => return Ok(key.into()),
-            Some(Item::Sec1Key(key)) => return Ok(key.into()),
-            None => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    "No keys found",
-                ))
-            }
-            _ => {}
-        }
-    }
+pub fn load_key(filename: &str) -> Result<PrivateKeyDer<'static>, pem::Error> {
+    PrivateKeyDer::from_pem_file(filename)
 }
 
 /// Runs a server on each TLS connection it establishes.
