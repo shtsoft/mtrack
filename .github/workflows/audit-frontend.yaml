@@ -20,4 +20,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: current
-      - run: npm install
+      - run: npm ci
+      - run: npm audit
