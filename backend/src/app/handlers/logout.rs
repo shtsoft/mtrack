@@ -32,6 +32,7 @@ use tracing::instrument;
 /// # Panics
 ///
 /// A panic is caused if there is an issue with the `RwLock`.
+#[allow(clippy::result_large_err)]
 fn delete_session_cookie(
     session_id: SessionID,
     state: &Arc<RwLock<AppState>>,

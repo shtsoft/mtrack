@@ -58,6 +58,7 @@ pub fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
 /// # Errors
 ///
 /// An error is returned if the cookie header contains chars other than visible ASCII.
+#[allow(clippy::result_large_err)]
 fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     match cookies_value.to_str() {
         Ok(cookies_str) => {
@@ -95,6 +96,7 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
 /// - parsing the cookie header fails.
 /// - there is no session ID cookie.
 /// - the session ID cookie is not an integer.
+#[allow(clippy::result_large_err)]
 pub fn extract_session_id(headers: &HeaderMap) -> Result<SessionID, Response> {
     match headers.get(header::COOKIE) {
         Some(cookies_value) => match parse_cookies(cookies_value) {
