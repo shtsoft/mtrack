@@ -9,28 +9,28 @@ use clap::{ArgAction, Parser};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
-    /// Make logging verbose
+    /// Enable verbose logging
     #[arg(long, short, action=ArgAction::SetTrue)]
     verbose: bool,
-    /// IP address the server uses
+    /// IP address for the server
     #[arg(long, default_value_t = Ipv4Addr::new(127, 0, 0, 1))]
     ip: Ipv4Addr,
-    /// Port the server uses
+    /// Port for the server
     #[arg(short, long, default_value_t = 10443)]
     port: u16,
-    /// Path to TLS certificate the server uses
+    /// Path to the TLS certificate
     #[arg(short, long)]
     cert: String,
-    /// Path to TLS key the server uses
+    /// Path to the TLS key
     #[arg(short, long)]
     key: String,
-    /// Path to upload users db the server uses
+    /// Path to the upload users database
     #[arg(short, long)]
     upload_users: String,
-    /// Path to download users db the server uses
+    /// Path to the download users database
     #[arg(short, long)]
     download_users: String,
-    /// Path to the frontend distribution the server uses
+    /// Path to the frontend distribution directory
     #[arg(long)]
     dist: String,
 }
@@ -49,7 +49,7 @@ fn main() {
     };
 
     let config = Config::new(args).unwrap_or_else(|err| {
-        eprintln!("Setting up application failed: {:?}", err);
+        eprintln!("Application setup failed: {:?}", err);
         process::exit(1);
     });
 
@@ -59,13 +59,13 @@ fn main() {
     {
         Ok(rt) => rt,
         Err(err) => {
-            eprintln!("Setting up tokio runtime failed: {:?}", err);
+            eprintln!("Tokio runtime setup failed: {:?}", err);
             process::exit(1);
         }
     };
 
     if let Err(err) = rt.block_on(mtrack::run(config)) {
-        eprintln!("Running application failed: {:?}", err);
+        eprintln!("Application execution failed: {:?}", err);
         process::exit(1);
     }
 

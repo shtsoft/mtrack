@@ -1,5 +1,5 @@
-/** 
- * This module defines a component trackings positions on a map.
+/**
+ * This module defines a component for tracking positions on a map.
  */
 
 import L from "leaflet";
@@ -40,9 +40,9 @@ type TrackerMapParameters = {
 
 /**
  * Renders a map and marks positions on it.
- * @param {any} `positions` - The positions marked on the map.
+ * @param {any} positions - The positions to be marked on the map.
  *
- * The positions should be a hash map from strings to pairs of numbers.
+ * The positions should be an object mapping strings to latitude/longitude pairs.
  */
 export function TrackerMap({ positions }: TrackerMapParameters) {
   useEffect(() => {

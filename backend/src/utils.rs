@@ -1,4 +1,4 @@
-//! This module defines some utility functions to run a server with TLS.
+//! This module defines utility functions for running a server with TLS.
 
 use std::fmt::Debug;
 use std::future::Future;
@@ -23,15 +23,15 @@ use tokio_rustls::TlsAcceptor;
 
 use tracing::{Instrument, Span};
 
-/// The time a connection is allowed to upgrade to TLS.
+/// The maximum time allowed for a connection to complete the TLS handshake.
 const TLS_TIMEOUT: Duration = Duration::from_millis(5000);
 
-/// Loads TLS certificates from a file.
-/// - `filename` is the file containing the certificates.
+/// Loads TLS certificates from a PEM file.
+/// - `filename` is the path to the file containing the certificates.
 ///
 /// # Errors
 ///
-/// An error is returned if opening the file fails.
+/// Returns an error if the file cannot be opened or parsed.
 pub fn load_certs(
     filename: &str,
 ) -> Result<Vec<CertificateDer<'static>>, Box<dyn std::error::Error>> {
@@ -45,29 +45,29 @@ pub fn load_certs(
     Ok(certs)
 }
 
-/// Loads a TLS key from a file.
-/// - `filename` is the file containing the key.
+/// Loads a TLS private key from a PEM file.
+/// - `filename` is the path to the file containing the key.
 ///
 /// # Errors
 ///
-/// An error is returned if opening the file fails or if reading from the file fails.
+/// Returns an error if the file cannot be opened or if the key is invalid.
 pub fn load_key(filename: &str) -> Result<PrivateKeyDer<'static>, pem::Error> {
     PrivateKeyDer::from_pem_file(filename)
 }
 
-/// Runs a server on each TLS connection it establishes.
-/// - `server` is the server which is run.
-/// - `addr` is the socket address of the listener of the TLS connection.
-/// - `state` is the state of the server.
-/// - `acceptor` is the TLS acceptor upgrading the TCP socket to a TLS connection.
+/// Runs the server and handles incoming TLS connections.
+/// - `server` is the service function to run for each connection.
+/// - `addr` is the socket address to listen on.
+/// - `state` is the shared application state passed to the server.
+/// - `acceptor` is the TLS acceptor used to upgrade TCP streams.
 ///
 /// # Errors
 ///
-/// An error is returned if binding to `addr` fails or accepting a connection fails.
+/// Returns an error if binding to the address or accepting a connection fails.
 ///
 /// # Notes
 ///
-/// This function only returns in the error case.
+/// This function runs indefinitely and only returns if an error occurs.
 pub async fn serve<S, F, State: Clone + Send + 'static>(
     server: S,
     addr: SocketAddr,
@@ -99,7 +99,7 @@ where
                 future::Either::Left((result, _)) => {
                     match result {
                         Ok(tls_socket) => {
-                            tracing::info!("Added TLS for connection from {}", addr);
+                            tracing::info!("Established TLS connection from {}", addr);
 
                             let span = tracing::error_span!(
                                 "service",
@@ -111,7 +111,7 @@ where
                         }
                         Err(err) => {
                             tracing::error!(
-                                "Failed to add TLS for connection from {}: {:?}",
+                                "Failed to establish TLS for connection from {}: {:?}",
                                 addr,
                                 err
                             );
@@ -119,7 +119,7 @@ where
                     };
                 }
                 future::Either::Right(_) => {
-                    tracing::warn!("Negotiating TLS for connection from {} timed out", addr);
+                    tracing::warn!("TLS handshake for connection from {} timed out", addr);
                 }
             }
         });
@@ -128,7 +128,7 @@ where
     }
 }
 
-/// Errors which can occur when handling tasks.
+/// Errors that can occur when managing tasks.
 #[derive(Debug, Error)]
 pub enum HandleError {
     #[error("{}", self)]
@@ -137,13 +137,13 @@ pub enum HandleError {
     Join(#[from] task::JoinError),
 }
 
-/// Runs a task until an interrupt signal is received aborting the task.
-/// - `handle_name` is the task name.
-/// - `handle` is the task handle.
+/// Runs a task until an interrupt signal (Ctrl+C) is received, then aborts the task.
+/// - `handle_name` is a descriptive name for the task.
+/// - `handle` is the join handle of the running task.
 ///
 /// # Errors
 ///
-/// An error is returned if there is an underlying I/O error or if the task failed to execute to completion.
+/// Returns an error if an I/O issue occurs or if the task fails to join.
 pub async fn sigint_abort<T: Send>(
     handle_name: &str,
     handle: JoinHandle<T>,

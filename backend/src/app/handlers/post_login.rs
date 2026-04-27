@@ -1,4 +1,4 @@
-//! This module defines the handler for logging in.
+//! This module defines the handler for user login.
 
 use crate::app::handlers::utils::{check_for_login, lookup_hash};
 use crate::app::{AppState, SessionState};
@@ -24,20 +24,20 @@ use tokio::task;
 
 use tracing::instrument;
 
-/// Abstracts the query.
+/// Represents the login query parameters.
 #[derive(Deserialize)]
 struct Query {
     name: String,
     password: String,
 }
 
-/// Makes a session and returns a session ID cookie for the newly logged in user.
-/// - `name` is the name of the user who is logging in.
-/// - `State(state)` is the application state.
+/// Creates a session and returns a session ID cookie for the newly logged-in user.
+/// - `name` is the username of the user logging in.
+/// - `state` is he shared application state.
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock`.
+/// Panics if the `RwLock` becomes poisoned.
 fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
     let mut rng = rand::thread_rng();
     let session_id: u128 = rng.gen();
@@ -59,22 +59,22 @@ fn make_session_cookie(name: &str, state: &Arc<RwLock<AppState>>) -> String {
         .to_string()
 }
 
-/// Logs a user in.
-/// - `name` is the name of the user who is logging in.
-/// - `password` is the password of the user who is logging in.
-/// - `state` is the application state.
+/// Processes the login credentials.
+/// - `name` is the username of the user.
+/// - `password` is the password provided by the user.
+/// - `state` is the shared application state.
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock` or if `make_session_cookie` panics.
+/// Panics if the `RwLock` is poisoned or if `make_session_cookie` panics.
 async fn login(name: &str, password: String, state: Arc<RwLock<AppState>>) -> Response {
-    // The following indirection is here to prevent a deadlock arising from the lifetime of the
-    // guard.
+    // This indirection prevents a deadlock by ensuring the read guard is dropped before
+    // potentially acquiring a write lock in make_session_cookie.
     let lookup = lookup_hash(name, &state.read().expect("Poisoned lock.").download_users);
     if let Some(hash) = lookup {
         let result = task::spawn_blocking(move || bcrypt::verify(password, &hash))
             .await
-            .expect("Impossible error when verifying password.");
+            .expect("Failed to verify password.");
         match result {
             Ok(true) => {
                 let session_cookie = make_session_cookie(name, &state);
@@ -83,43 +83,43 @@ async fn login(name: &str, password: String, state: Arc<RwLock<AppState>>) -> Re
                     .status(StatusCode::SEE_OTHER)
                     .header(header::LOCATION, "/tracker")
                     .header(header::SET_COOKIE, session_cookie)
-                    .body(Body::from("Log in succeeded."))
-                    .expect("Impossible error when building response.")
+                    .body(Body::from("Login successful."))
+                    .expect("Failed to build response.")
             }
             Ok(false) => {
-                tracing::warn!("User {} trying to log in with invalid password", name);
+                tracing::warn!("User {} attempted to log in with an incorrect password", name);
                 Response::builder()
                     .status(StatusCode::SEE_OTHER)
                     .header(header::LOCATION, "/login")
                     .body(Body::from("You must have valid login data."))
-                    .expect("Impossible error when building response.")
+                    .expect("Failed to build response.")
             }
             Err(err) => {
-                tracing::error!("Failed to verify password of user {}: {:?}", name, err);
+                tracing::error!("Failed to verify password for user {}: {:?}", name, err);
                 Response::builder()
                     .status(StatusCode::INTERNAL_SERVER_ERROR)
                     .body(Body::from("Failed to validate login data."))
-                    .expect("Impossible error when building response.")
+                    .expect("Failed to build response.")
             }
         }
     } else {
-        tracing::warn!("Client trying to log in with invalid user name");
+        tracing::warn!("Login attempt with non-existent username: {}", name);
         Response::builder()
             .status(StatusCode::SEE_OTHER)
             .header(header::LOCATION, "/login")
             .body(Body::from("You must have valid login data."))
-            .expect("Impossible error when building response.")
+            .expect("Failed to build response.")
     }
 }
 
-/// Logs a user in if it is not already logged in.
-/// - `headers` are the http headers.
-/// - `State(state)` is the application state.
-/// - `body` is the http body of the request.
+/// Handles the login request if the user is not already authenticated.
+/// - `headers` are the incoming HTTP headers.
+/// - `State(state)` is the shared application state.
+/// - `body` is the HTTP request body containing credentials.
 ///
 /// # Panics
 ///
-/// A panic is caused if `check_for_login` or `login` panics.
+/// Panics if `check_for_login` or `login` panics.
 #[instrument(skip_all)]
 pub async fn post_login(
     headers: HeaderMap,
@@ -133,11 +133,11 @@ pub async fn post_login(
     let query: Query = match serde_qs::from_str(&body) {
         Ok(query) => query,
         Err(err) => {
-            tracing::warn!("Client posting invalid login query: {:?}", err);
+            tracing::warn!("Client sent an invalid login query: {:?}", err);
             return Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("You must have valid login data."))
-                .expect("Impossible error when building response.");
+                .expect("Failed to build response.");
         }
     };
 

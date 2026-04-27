@@ -5,11 +5,11 @@
 [license-badge]: https://img.shields.io/badge/license-GPL-blue.svg
 [license-url]: ./Cargo.toml
 
-The backend of [mtrack](https://github.com/shtsoft/mtrack).
+The backend for [mtrack](https://github.com/shtsoft/mtrack).
 
 ### Installation
 
-Having a clone of the [mtrack repo](https://github.com/shtsoft/mtrack), generate the mtrack binary by running the following commands in the context of the repo top-level:
+After cloning the [mtrack repo](https://github.com/shtsoft/mtrack), generate the mtrack binary by running the following commands in the context of the repo top-level:
 
 ```console
 user@host:~$ cd backend
@@ -20,13 +20,14 @@ Then copy the resulting binary `target/release/mtrack` to the appropriate locati
 
 ### Usage
 
-To get a usage description just run the app with the 'help'-argument:
+To view usage instructions just run the app with the 'help'-argument:
 
 ```console
 user@host:~$ mtrack --help
 ```
 
-(Also have a look at the [tests-data directory](tests-data) to see what is needed to run mtrack. In particular, note that the PHC strings in the user databases are bcrypt.)
+(Also take a look at the [tests-data directory](tests-data) to see what is needed to run mtrack.
+In particular, note that the PHC strings in the user databases use bcrypt.)
 
 ## Contributing
 

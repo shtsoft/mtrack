@@ -1,5 +1,5 @@
 /**
- * This module defines a component for logging out.
+ * This module defines a logout component.
  */
 
 import React from "react";

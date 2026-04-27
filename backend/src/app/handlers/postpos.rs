@@ -1,4 +1,4 @@
-//! This module defines the handler for getting the postpos page.
+//! This module defines the handler for retrieving the position upload page.
 
 use crate::app::AppState;
 
@@ -11,16 +11,17 @@ use axum::response::Response;
 
 use tracing::instrument;
 
-/// Returns the postpos page.
+/// Serves the position upload page.
+/// - `State(state)` is the shared application state.
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock`.
+/// Panics if the `RwLock` becomes poisoned.
 #[instrument(skip_all)]
 pub async fn postpos(State(state): State<Arc<RwLock<AppState>>>) -> Response {
     let pages = &state.read().expect("Poisoned lock.").pages;
     Response::builder()
         .status(StatusCode::OK)
         .body(Body::from(pages["postpos"].clone()))
-        .expect("Impossible error when building response.")
+        .expect("Failed to build response.")
 }

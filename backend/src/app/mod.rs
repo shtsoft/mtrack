@@ -1,5 +1,5 @@
 //! This module defines the application and its state.
-//! Additionally, the module declares a submodule with the handlers.
+//! Additionally, it declares a submodule for the handlers.
 
 pub mod handlers;
 
@@ -37,41 +37,41 @@ use tower::Service;
 
 use tower_http::services::ServeDir;
 
-/// The number of time units a new session is alive.
+/// The number of time units a new session remains active.
 pub const SESSION_TTL: u8 = 24;
-/// The length of a session time unit in seconds.
+/// The duration of a single session time unit in seconds.
 pub const SESSION_TTL_UNIT: Duration = Duration::from_secs(3600);
 
 /// The name of the session ID cookie.
 pub const SESSION_ID_COOKIE_NAME: &str = "sessionID";
 
-/// A type of names.
+/// Type alias for names.
 type Name = String;
 
-/// A type of session IDs.
+/// Type alias for session IDs.
 type SessionID = u128;
 
-/// Abstracts coordinates.
+/// Represents geographic coordinates.
 #[derive(Deserialize, Serialize)]
 pub struct Coordinates {
     latitude: f32,
     longitude: f32,
 }
 
-/// Abstracts session state.
+/// Represents the state of a session.
 pub struct SessionState {
     pub name: Name,
     pub ttl: u8,
 }
 
-/// Abstracts entries in the user databases.
+/// Represents an entry in the user database.
 #[derive(Deserialize, Clone)]
 pub struct UserEntry {
     name: Name,
     hash: String,
 }
 
-/// Abstracts the application state.
+/// Represents the global application state.
 pub struct AppState {
     pub sessions: HashMap<SessionID, SessionState>,
     pub positions: HashMap<Name, Coordinates>,
@@ -80,20 +80,20 @@ pub struct AppState {
     pub pages: HashMap<&'static str, String>,
 }
 
-/// Abstracts the state.
+/// Wraps the shared application state.
 #[derive(Clone)]
 pub struct State {
     pub app_state: Arc<RwLock<AppState>>,
     pub dist: String,
 }
 
-/// Defines the application.
+/// Configures and starts the application server.
 /// - `tls_socket` is the TLS connection the server runs on.
-/// - `state` is the server state.
+/// - `state` is the shared application state.
 pub async fn server(tls_socket: TlsStream<TcpStream>, state: State) {
     tracing::debug!("TcpStream from proxy to downstream: {:?}", tls_socket);
 
-    tracing::info!("Start serving connection");
+    tracing::info!("Starting connection handler");
 
     let assets = state.dist + "/assets";
     let app = Router::new()

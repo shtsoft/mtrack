@@ -12,6 +12,7 @@ use axum::response::Response;
 use tracing::instrument;
 
 /// Returns the home page.
+/// - `State(state)` is the shared application state.
 ///
 /// # Panics
 ///

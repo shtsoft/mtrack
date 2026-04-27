@@ -1,4 +1,4 @@
-//! This module defines the handler for getting the login page.
+//! This module defines the handler for retrieving the login page.
 
 use crate::app::handlers::utils::check_for_login;
 use crate::app::AppState;
@@ -14,11 +14,13 @@ use hyper::header::HeaderMap;
 
 use tracing::instrument;
 
-/// Returns the login page.
+/// Serves the login page.
+/// - `headers` are the incoming HTTP headers.
+/// - `State(state)` is the shared application state.
 ///
 /// # Panics
 ///
-/// A panic is caused if `check_for_login` panics.
+/// Panics if the internal `check_for_login` utility panics.
 #[instrument(skip_all)]
 pub async fn get_login(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
     if let Some(response) = check_for_login(&headers, &state) {
@@ -29,5 +31,5 @@ pub async fn get_login(headers: HeaderMap, State(state): State<Arc<RwLock<AppSta
     Response::builder()
         .status(StatusCode::OK)
         .body(Body::from(pages["login"].clone()))
-        .expect("Impossible error when building response.")
+        .expect("Failed to build response.")
 }

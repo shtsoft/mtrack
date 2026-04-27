@@ -1,4 +1,4 @@
-//! This module defines some utility functions to handle requests.
+//! This module defines utility functions for handling requests.
 
 use crate::app::SESSION_ID_COOKIE_NAME;
 use crate::app::{AppState, UserEntry};
@@ -15,13 +15,13 @@ use cookie::{Cookie, CookieJar};
 use hyper::header;
 use hyper::header::{HeaderMap, HeaderValue};
 
-/// Looks up a name to a given password in a users database and returns `None` if it was not found.
+/// Looks up a name for a given password in a user database and returns `None` if it was not found.
 /// - `password` is the given password.
-/// - `users` is the users database.
+/// - `users` is the user database.
 ///
 /// # Notes
 ///
-/// This function is compute heavy.
+/// This function is computationally expensive.
 pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<Name> {
     for user in users {
         match bcrypt::verify(password, &user.hash) {
@@ -31,7 +31,7 @@ pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<Name> {
                 }
             }
             Err(err) => {
-                tracing::error!("Failed to verify password of user {}: {:?}", user.name, err);
+                tracing::error!("Failed to verify password for user {}: {:?}", user.name, err);
                 continue;
             }
         };
@@ -40,9 +40,9 @@ pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<Name> {
     None
 }
 
-/// Looks up a hash to a given name in a users database and returns `None` if it was not found.
+/// Looks up a hash for a given name in a user database and returns `None` if it was not found.
 /// - `name` is the given name.
-/// - `users` is the users database.
+/// - `users` is the user database.
 pub fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
     for user in users {
         if user.name == name {
@@ -52,12 +52,12 @@ pub fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
     None
 }
 
-/// Parses a cookie header into cookie jar.
+/// Parses a cookie header into a cookie jar.
 /// - `cookies_value` is the cookie header.
 ///
 /// # Errors
 ///
-/// An error is returned if the cookie header contains chars other than visible ASCII.
+/// An error is returned if the cookie header contains characters other than visible ASCII.
 #[allow(clippy::result_large_err)]
 fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     match cookies_value.to_str() {
@@ -73,25 +73,25 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
         }
         Err(err) => {
             tracing::warn!(
-                "Client showing cookies containing other chars than visible ASCII: {:?}",
+                "Client provided cookies containing characters other than visible ASCII: {:?}",
                 err
             );
             Err(Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from(
-                    "Cookies have to be made up by visible ASCII chars only.",
+                    "Cookies must consist of visible ASCII characters only.",
                 ))
                 .expect("Impossible error when building response."))
         }
     }
 }
 
-/// Extracts the session ID cookie from the http headers.
-/// - `headers` are the http headers.
+/// Extracts the session ID cookie from the HTTP headers.
+/// - `headers` are the HTTP headers.
 ///
 /// # Errors
 ///
-/// An error is returned if
+/// An error is returned if:
 /// - there is no cookie header.
 /// - parsing the cookie header fails.
 /// - there is no session ID cookie.
@@ -105,57 +105,57 @@ pub fn extract_session_id(headers: &HeaderMap) -> Result<SessionID, Response> {
                     Ok(session_id) => Ok(session_id),
                     Err(err) => {
                         tracing::warn!(
-                            "Client showing invalid '{}': {:?}",
+                            "Client provided invalid '{}': {:?}",
                             SESSION_ID_COOKIE_NAME,
                             err
                         );
                         Err(Response::builder()
                             .status(StatusCode::BAD_REQUEST)
                             .body(Body::from(format!(
-                                "The '{}' has to be an integer.",
+                                "The '{}' must be an integer.",
                                 SESSION_ID_COOKIE_NAME
                             )))
-                            .expect("Impossible error when building response."))
+                            .expect("Failed to build response."))
                     }
                 },
                 None => Err(Response::builder()
                     .status(StatusCode::BAD_REQUEST)
                     .body(Body::from(format!(
-                        "There is no '{}'-cookie.",
+                        "The '{}' cookie is missing.",
                         SESSION_ID_COOKIE_NAME
                     )))
-                    .expect("Impossible error when building response.")),
+                    .expect("Failed to build response.")),
             },
             Err(response) => Err(response),
         },
         None => Err(Response::builder()
             .status(StatusCode::BAD_REQUEST)
             .body(Body::from(format!(
-                "The are no cookies and in particular no '{}'-cookie.",
+                "No cookies were found, specifically the '{}' cookie.",
                 SESSION_ID_COOKIE_NAME
             )))
-            .expect("Impossible error when building response.")),
+            .expect("Failed to build response.")),
     }
 }
 
-/// Checks if a client is already logged in and if so returns a redirection response to the tracker.
-/// - `headers` are the http headers.
+/// Checks if a client is already logged in and, if so, returns a redirection response to the tracker.
+/// - `headers` are the HTTP headers.
 /// - `state` is the application state.
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock`.
+/// This function panics if the `RwLock` is poisoned.
 pub fn check_for_login(headers: &HeaderMap, state: &Arc<RwLock<AppState>>) -> Option<Response> {
     if let Ok(session_id) = extract_session_id(headers) {
         let sessions = &state.read().expect("Poisoned lock.").sessions;
         if sessions.contains_key(&session_id) {
-            tracing::info!("Client trying to log in while logged in");
+            tracing::info!("Client attempted to log in while already logged in");
             return Some(
                 Response::builder()
                     .status(StatusCode::SEE_OTHER)
                     .header(header::LOCATION, "/tracker")
                     .body(Body::from("You are already logged in."))
-                    .expect("Impossible error when building response."),
+                    .expect("Failed to build response."),
             );
         }
     }

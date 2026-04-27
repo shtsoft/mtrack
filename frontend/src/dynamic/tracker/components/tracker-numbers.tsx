@@ -1,5 +1,5 @@
-/** 
- * This module defines a component tracking positions as numbers.
+/**
+ * This module defines a component for tracking positions as numbers.
  */
 
 import React from "react";
@@ -10,9 +10,9 @@ type TrackerNumbersParameters = {
 
 /**
  * Renders a list of positions.
- * @param {any} `positions` - The positions to render.
+ * @param {any} positions - The positions to render.
  *
- * The positions should be a hash map from strings to pairs of numbers.
+ * The positions should be an object mapping strings to latitude/longitude pairs.
  */
 export function TrackerNumbers({ positions }: TrackerNumbersParameters) {
   const list_items = [];

@@ -1,4 +1,4 @@
-//! This module defines the handler for logging out.
+//! This module defines the handler for user logout.
 
 use crate::app::handlers::utils::extract_session_id;
 use crate::app::AppState;
@@ -21,17 +21,17 @@ use time::OffsetDateTime;
 
 use tracing::instrument;
 
-/// Removes a session and returns a cookie deleting the session ID cookie on the client.
-/// - `session_id` is the ID of the session which is to be removed.
-/// - `State(state)` is the application state.
+/// Removes a session and returns a cookie that instructs the client to delete its session ID.
+/// - `session_id` is the ID of the session to be removed.
+/// - `state` is the shared application state.
 ///
 /// # Errors
 ///
-/// An error is returned if the session does not exist.
+/// Returns an error if the session does not exist.
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock`.
+/// Panics if the `RwLock` becomes poisoned.
 #[allow(clippy::result_large_err)]
 fn delete_session_cookie(
     session_id: SessionID,
@@ -50,22 +50,22 @@ fn delete_session_cookie(
             session_state.name,
         )),
         None => {
-            tracing::warn!("Client trying to log out from non-existing session");
+            tracing::warn!("Client attempted to log out of a non-existent session");
             Err(Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("Your session does not exist."))
-                .expect("Impossible error when building response."))
+                .expect("Failed to build response."))
         }
     }
 }
 
-/// Logs a logged in user out.
-/// - `headers` are the http headers.
-/// - `State(state)` is the application state.
+/// Logs out an authenticated user.
+/// - `headers` are the incoming HTTP headers.
+/// - `State(state)` is the shared application state.
 ///
 /// # Panics
 ///
-/// A panic is caused if `delete_session_cookie` panics.
+/// Panics if `delete_session_cookie` panics.
 #[instrument(skip_all)]
 pub async fn logout(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>>>) -> Response {
     match extract_session_id(&headers) {
@@ -76,8 +76,8 @@ pub async fn logout(headers: HeaderMap, State(state): State<Arc<RwLock<AppState>
                     .status(StatusCode::SEE_OTHER)
                     .header(header::LOCATION, "/")
                     .header(header::SET_COOKIE, delete_session_cookie)
-                    .body(Body::from("Log out succeeded."))
-                    .expect("Impossible error when building response.")
+                    .body(Body::from("Logout successful."))
+                    .expect("Failed to build response.")
             }
             Err(response) => response,
         },

@@ -1,10 +1,10 @@
-//! mtrack is a position tracking app based on getting and posting positions via http requests.
+//! mtrack is a position-tracking app that receives and posts locations via HTTP requests.
 //!
 //! ## Design
 //!
-//! The idea is that a predefined set of users can upload their current position with a post request.
-//! The uploaded positions can then be downloaded with a get request by another set of predefined users.
-//! Both uploading and downloading is password protected and a frontend is served to allow easy uploading and downloading.
+//! A predefined set of users can upload their current positions via POST requests.
+//! These positions can then be downloaded via GET requests by a separate set of authorized users.
+//! Both uploading and downloading are password-protected, and a frontend is provided for a user-friendly experience.
 
 pub mod app;
 
@@ -34,10 +34,10 @@ use tracing::{Instrument, Level};
 /// The name of the application.
 const NAME: &str = "mtrack";
 
-/// The names of the pages the application serves (except for "home").
+/// The names of the pages the application serves (excluding "home").
 const PAGE_NAMES: [&str; 3] = ["login", "postpos", "tracker"];
 
-/// Abstracts the command line parameters.
+/// Represents the command line arguments for the application.
 pub struct Args {
     pub verbose: bool,
     pub ip: Ipv4Addr,
@@ -49,29 +49,29 @@ pub struct Args {
     pub dist: String,
 }
 
-/// Abstracts the configuration of the application.
+/// Represents the configuration settings for the application.
 pub struct Config {
-    /// maximal tracing level of the application
+    /// Maximum tracing level for logging
     level: Level,
-    /// socket address to which the application binds
+    /// Socket address the application binds to
     addr: SocketAddr,
-    /// TLS server config used for connections
+    /// TLS server configuration for secure connections
     server_config: ServerConfig,
-    /// database of the users who can upload their positions
+    /// Database of users authorized to upload positions
     upload_users: Vec<UserEntry>,
-    /// database of the users who can download uploaded positions
+    /// Database of users authorized to download positions
     download_users: Vec<UserEntry>,
-    /// path to the frontend distribution
+    /// Path to the frontend distribution directory
     dist: String,
 }
 
 impl Config {
-    /// Creates a new configuration of the application.
-    /// - `args` are the commandline parameters.
+    /// Creates a new application configuration.
+    /// - `args` are the parsed command line parameters.
     ///
     ///  # Errors
     ///
-    ///  An error is returned if making the TLS server config fails or if loading one of the user databases fails.
+    ///  Returns an error if the TLS configuration fails or if a user database cannot be loaded.
     pub fn new(args: Args) -> Result<Self, Box<dyn std::error::Error>> {
         let level = if args.verbose {
             Level::TRACE
@@ -110,11 +110,11 @@ impl Config {
 }
 
 /// Runs the application.
-/// - `config` is the configuration the application is run in.
+/// - `config` is the configuration used to run the server.
 ///
 ///  # Errors
 ///
-///  An error is returned if loading the pages fails or if there is a problem with the aborted server.
+///  Returns an error if pages fail to load or if the server encounters a critical issue during shutdown.
 pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     fn load_pages<'a>(
         dist: &str,
@@ -189,7 +189,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn std::error::Error + Send 
 
     let server = sigint_abort(NAME, handle).await;
 
-    tracing::info!("{} server is down", NAME);
+    tracing::info!("{} server has shut down", NAME);
 
     if let Some(t) = server? {
         t?;

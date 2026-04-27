@@ -1,4 +1,4 @@
-//! This module defines the handler for posting positions.
+//! This module defines the handler for posting user positions.
 
 use crate::app::handlers::utils::lookup_name;
 use crate::app::{AppState, Coordinates};
@@ -12,14 +12,14 @@ use tokio::task;
 
 use tracing::instrument;
 
-/// Posts the position of a user with a valid key.
-/// - `Path(path)` is the path of the URL.
-/// - `State(state)` is the application state.
-/// - `body` is the http body of the request.
+/// Updates the position for a user with a valid key.
+/// - `Path(key)` is the unique key identifying the user.
+/// - `State(state)` is the shared application state.
+/// - `body` is the HTTP request body containing the coordinates.
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock`.
+/// Panics if the `RwLock` becomes poisoned.
 #[instrument(skip_all)]
 pub async fn post_position(
     Path(key): Path<String>,
@@ -34,19 +34,19 @@ pub async fn post_position(
         )
     })
     .await
-    .expect("Poisened lock.");
+    .expect("Poisoned lock.");
     if let Some(name) = result {
         match serde_json::from_str::<Coordinates>(&body) {
             Ok(coordinates) => {
                 let positions = &mut state.write().expect("Poisoned lock.").positions;
                 if positions.insert(name.clone(), coordinates).is_none() {
-                    tracing::info!("Start tracking position of user {}", name);
+                    tracing::info!("Started tracking position for user: {}", name);
                 };
 
                 (StatusCode::OK, String::new())
             }
             Err(err) => {
-                tracing::warn!("Client posting invalid coordinates: {:?}", err);
+                tracing::warn!("Client submitted invalid coordinates: {:?}", err);
                 (
                     StatusCode::BAD_REQUEST,
                     "Coordinates must be a pair of floats.".to_string(),
@@ -54,10 +54,10 @@ pub async fn post_position(
             }
         }
     } else {
-        tracing::warn!("Client trying to post coordinates with invalid key");
+        tracing::warn!("Client attempted to post coordinates with an invalid key");
         (
             StatusCode::BAD_REQUEST,
-            "You must have valid key to post coordinates.".to_string(),
+            "You must have a valid key to post coordinates.".to_string(),
         )
     }
 }

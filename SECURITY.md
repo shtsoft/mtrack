@@ -1,5 +1,7 @@
 ## Reporting Security Issues
 
-We are happy if you report bugs (although we are not happy that there are any).
-But if the bugs have security-implications please report them via mail [bugs-mtrack@shtsoft.eu](mailto:bugs-mtrack@shtsoft.eu) and do NOT use the public Github Issue tracker in this case to give us some time for fixes.
-Otherwise the public Github Issue tracker is preferred.
+We appreciate your bug reports (though we regret that they exist).
+
+If a bug has security implications, please report it via email to [bugs-mtrack@shtsoft.eu](mailto:bugs-mtrack@shtsoft.eu).
+In these cases, please do NOT use the public GitHub issue tracker; this gives us time to develop a fix before the issue is made public.
+For all other bugs, the public GitHub issue tracker is preferred.

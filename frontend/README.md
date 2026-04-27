@@ -5,11 +5,11 @@
 [license-badge]: https://img.shields.io/badge/license-GPL-blue.svg
 [license-url]: ./package.json
 
-The frontend of [mtrack](https://github.com/shtsoft/mtrack).
+The frontend for [mtrack](https://github.com/shtsoft/mtrack).
 
 ### Installation
 
-Having a clone of the [mtrack repo](https://github.com/shtsoft/mtrack), generate the (servable) `dist` directory by running the following commands in the context of the repo top-level:
+After cloning the [mtrack repo](https://github.com/shtsoft/mtrack), generate the (servable) `dist` directory by running the following commands in the context of the repo top-level:
 
 ```console
 user@host:~$ cd frontend
@@ -21,9 +21,9 @@ Then copy the resulting directory `dist` to the appropriate location.
 
 ### Usage
 
-To properly serve mtrack, you have to use the [backend](../backend).
+To properly serve mtrack, you need to use the [backend](../backend).
 
-However, for a quick view in the browser, you can serve the `dist` directory locally on `http://127.0.0.1:8080` with
+However, for a quick view in the browser, you can serve the `dist` directory locally on `http://127.0.0.1:8080` by running
 
 ```console
 user@host:~$ npm run serve

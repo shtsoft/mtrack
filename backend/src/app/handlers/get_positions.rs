@@ -1,4 +1,4 @@
-//! This module defines the handler for getting positions.
+//! This module defines the handler for retrieving user positions.
 
 use crate::app::handlers::utils::extract_session_id;
 use crate::app::AppState;
@@ -14,13 +14,13 @@ use hyper::header::HeaderMap;
 
 use tracing::instrument;
 
-/// Gets the positions after checking for a valid session.
-/// - `headers` are the http headers.
-/// - `State(state)` is the application state.
+/// Retrieves the current positions after validating the session.
+/// - `headers` are the incoming HTTP headers.
+/// - `State(state)` is the shared application state.
 ///
 /// # Panics
 ///
-/// A panic is caused if there is an issue with the `RwLock`.
+/// Panics if the `RwLock` becomes poisoned.
 #[instrument(skip_all)]
 pub async fn get_positions(
     headers: HeaderMap,
@@ -34,21 +34,21 @@ pub async fn get_positions(
                     Ok(positions) => Response::builder()
                         .status(StatusCode::OK)
                         .body(Body::from(positions))
-                        .expect("Impossible error when building response."),
+                        .expect("Failed to build response."),
                     Err(err) => {
                         tracing::error!("Failed to serialize positions: {:?}", err);
                         Response::builder()
                             .status(StatusCode::INTERNAL_SERVER_ERROR)
                             .body(Body::from("Failed to generate position data."))
-                            .expect("Impossible error when building response.")
+                            .expect("Failed to build response.")
                     }
                 }
             } else {
-                tracing::warn!("Client trying to get positions without being logged in");
+                tracing::warn!("Unauthorized attempt to access positions without a valid session");
                 Response::builder()
                     .status(StatusCode::BAD_REQUEST)
-                    .body(Body::from("You have to be logged in to get positions."))
-                    .expect("Impossible error when building response.")
+                    .body(Body::from("You must be logged in to retrieve positions."))
+                    .expect("Failed to build response.")
             }
         }
         Err(response) => response,
