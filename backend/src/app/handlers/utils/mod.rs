@@ -31,10 +31,13 @@ pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<Name> {
                 }
             }
             Err(err) => {
-                tracing::error!("Failed to verify password for user {}: {:?}", user.name, err);
-                continue;
+                tracing::error!(
+                    "Failed to verify password for user {}: {:?}",
+                    user.name,
+                    err
+                );
             }
-        };
+        }
     }
 
     None
@@ -43,6 +46,7 @@ pub fn lookup_name(password: &str, users: &Vec<UserEntry>) -> Option<Name> {
 /// Looks up a hash for a given name in a user database and returns `None` if it was not found.
 /// - `name` is the given name.
 /// - `users` is the user database.
+#[must_use]
 pub fn lookup_hash(name: &str, users: &Vec<UserEntry>) -> Option<String> {
     for user in users {
         if user.name == name {
@@ -63,11 +67,8 @@ fn parse_cookies(cookies_value: &HeaderValue) -> Result<CookieJar, Response> {
     match cookies_value.to_str() {
         Ok(cookies_str) => {
             let mut jar = CookieJar::new();
-            for cookie in Cookie::split_parse(cookies_str.to_string()) {
-                match cookie {
-                    Ok(c) => jar.add(c),
-                    Err(_) => continue,
-                };
+            for cookie in Cookie::split_parse(cookies_str.to_string()).flatten() {
+                jar.add(cookie);
             }
             Ok(jar)
         }

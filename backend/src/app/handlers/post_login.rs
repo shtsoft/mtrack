@@ -87,7 +87,10 @@ async fn login(name: &str, password: String, state: Arc<RwLock<AppState>>) -> Re
                     .expect("Failed to build response.")
             }
             Ok(false) => {
-                tracing::warn!("User {} attempted to log in with an incorrect password", name);
+                tracing::warn!(
+                    "User {} attempted to log in with an incorrect password",
+                    name
+                );
                 Response::builder()
                     .status(StatusCode::SEE_OTHER)
                     .header(header::LOCATION, "/login")

@@ -96,28 +96,26 @@ where
             futures::pin_mut!(tls_stream);
             futures::pin_mut!(timer);
             match future::select(tls_stream, timer).await {
-                future::Either::Left((result, _)) => {
-                    match result {
-                        Ok(tls_socket) => {
-                            tracing::info!("Established TLS connection from {}", addr);
+                future::Either::Left((result, _)) => match result {
+                    Ok(tls_socket) => {
+                        tracing::info!("Established TLS connection from {}", addr);
 
-                            let span = tracing::error_span!(
-                                "service",
-                                "connection-id" = id,
-                                "client-address" = %addr,
-                            );
-                            span.follows_from(Span::current());
-                            server(tls_socket, state).instrument(span).await;
-                        }
-                        Err(err) => {
-                            tracing::error!(
-                                "Failed to establish TLS for connection from {}: {:?}",
-                                addr,
-                                err
-                            );
-                        }
-                    };
-                }
+                        let span = tracing::error_span!(
+                            "service",
+                            "connection-id" = id,
+                            "client-address" = %addr,
+                        );
+                        span.follows_from(Span::current());
+                        server(tls_socket, state).instrument(span).await;
+                    }
+                    Err(err) => {
+                        tracing::error!(
+                            "Failed to establish TLS for connection from {}: {:?}",
+                            addr,
+                            err
+                        );
+                    }
+                },
                 future::Either::Right(_) => {
                     tracing::warn!("TLS handshake for connection from {} timed out", addr);
                 }

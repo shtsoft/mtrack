@@ -41,7 +41,7 @@ pub async fn post_position(
                 let positions = &mut state.write().expect("Poisoned lock.").positions;
                 if positions.insert(name.clone(), coordinates).is_none() {
                     tracing::info!("Started tracking position for user: {}", name);
-                };
+                }
 
                 (StatusCode::OK, String::new())
             }
